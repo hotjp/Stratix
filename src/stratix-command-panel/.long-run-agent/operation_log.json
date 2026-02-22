@@ -149,6 +149,22 @@
         "spec_path": "/Users/kingj/code/Stratix/src/stratix-command-panel/.long-run-agent/specs/feature_005.md",
         "created_at": "2026-02-22T17:21:52.112146"
       }
+    },
+    {
+      "id": "log_20260222175952_e7558d49",
+      "timestamp": "2026-02-22T17:59:52.385018",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_001"
+      },
+      "details": {
+        "from_status": "in_progress",
+        "to_status": "in_progress",
+        "reason": "CLI 操作"
+      }
     }
   ],
   "index": {
@@ -165,7 +181,8 @@
         "log_20260222172147_a81379d0",
         "log_20260222172149_9b8b0441",
         "log_20260222172150_8e3e01b7",
-        "log_20260222172152_107500eb"
+        "log_20260222172152_107500eb",
+        "log_20260222175952_e7558d49"
       ]
     },
     "by_action": {
@@ -180,12 +197,16 @@
         "log_20260222172149_9b8b0441",
         "log_20260222172150_8e3e01b7",
         "log_20260222172152_107500eb"
+      ],
+      "status_change": [
+        "log_20260222175952_e7558d49"
       ]
     },
     "by_feature": {
       "feature_001": [
         "log_20260222143736_c5148b60",
-        "log_20260222172146_3f08a463"
+        "log_20260222172146_3f08a463",
+        "log_20260222175952_e7558d49"
       ],
       "feature_002": [
         "log_20260222143737_a0065cf4",

@@ -108,6 +108,7 @@ export interface StratixCommandData {
 export type StratixFrontendEventType = 
   | 'stratix:agent_select'
   | 'stratix:agent_deselect'
+  | 'stratix:skill_selected'
   | 'stratix:command_execute'
   | 'stratix:command_cancel';
 
@@ -127,6 +128,7 @@ export interface StratixFrontendOperationEvent {
   eventType: StratixFrontendEventType;
   payload: {
     agentIds?: string[];
+    skill?: StratixSkillConfig;
     command?: StratixCommandData;
     commandId?: string;
   };
