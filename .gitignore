@@ -1,0 +1,46 @@
+# Documentation
+**/init.md
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Runtime data
+stratix-data/
+stratix-backups/
+*.db.json
+
+# Coverage
+coverage/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# LRA backup files
+.long-run-agent/backup/
