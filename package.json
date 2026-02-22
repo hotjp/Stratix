@@ -1,0 +1,37 @@
+{
+  "name": "stratix",
+  "version": "0.1.0",
+  "description": "Stratix 星策系统 - 基于 Phaser RTS 游戏化界面的多 Agent 可视化指挥平台",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/**/*.ts",
+    "test": "jest"
+  },
+  "keywords": [
+    "stratix",
+    "ai",
+    "agent",
+    "rts",
+    "phaser",
+    "openclaw"
+  ],
+  "author": "Stratix Team",
+  "license": "MIT",
+  "dependencies": {
+    "mitt": "^3.0.1",
+    "lowdb": "^7.0.1",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5.3.3",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0"
+  }
+}

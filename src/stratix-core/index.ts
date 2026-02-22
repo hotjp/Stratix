@@ -1,0 +1,14 @@
+/**
+ * Stratix Core - 核心协议层
+ * 
+ * 统一数据协议定义和事件总线，是所有模块的依赖基础
+ */
+
+// 导出数据协议
+export * from './stratix-protocol';
+
+// 导出事件总线
+export { default as StratixEventBus } from './StratixEventBus';
+
+// 导出类型定义
+export * from './types/index';
