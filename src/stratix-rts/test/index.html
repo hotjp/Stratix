@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stratix RTS - 测试页面</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a1a;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #00ff00;
+      font-size: 24px;
+    }
+    #test-controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      background: #2d2d44;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #3d3d54;
+    }
+    #stratix-rts-container {
+      border: 2px solid #00ff00;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    #test-log {
+      width: 800px;
+      max-width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      background: #1a1a2e;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 10px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .log-item { padding: 2px 0; border-bottom: 1px solid #333; }
+    .log-success { color: #00ff00; }
+    .log-error { color: #ff4444; }
+    .log-info { color: #00ffff; }
+    .instructions {
+      background: #16213e;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+      max-width: 800px;
+    }
+    .instructions h3 { color: #00ff00; margin-bottom: 10px; }
+    .instructions ul { margin-left: 20px; }
+    .instructions li { margin: 5px 0; color: #ccc; }
+  </style>
+</head>
+<body>
+  <h1>🎮 Stratix RTS 测试页面</h1>
+  
+  <div class="instructions">
+    <h3>测试说明</h3>
+    <ul>
+      <li>点击地图上的 Agent 选中它（绿色圆环表示选中）</li>
+      <li>拖拽空白区域可以框选多个 Agent</li>
+      <li>滚轮缩放，方向键移动视角</li>
+      <li>ESC 取消选中</li>
+      <li>使用下方按钮测试状态变化</li>
+    </ul>
+  </div>
+  
+  <div id="test-controls">
+    <button id="btn-add-agent">添加 Agent</button>
+    <button id="btn-add-multi">添加 5 个 Agent</button>
+    <button id="btn-status-busy">设置选中为 Busy</button>
+    <button id="btn-status-error">设置选中为 Error</button>
+    <button id="btn-status-online">设置选中为 Online</button>
+    <button id="btn-clear-selection">清除选中</button>
+    <button id="btn-log-sprites">输出精灵列表</button>
+  </div>
+  
+  <div id="stratix-rts-container"></div>
+  
+  <div id="test-log"></div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

@@ -6,7 +6,9 @@
       "action": "create_feature_spec",
       "feature": "stratix-core",
       "details": "创建 stratix-core 模块 feature 拆分文档，包含 4 个子 feature",
-      "files": [".long-run-agent/specs/stratix-core-features.md"]
+      "files": [
+        ".long-run-agent/specs/stratix-core-features.md"
+      ]
     },
     {
       "timestamp": "2026-02-22T14:40:01.000000",
@@ -22,7 +24,10 @@
       "action": "create_config_files",
       "feature": "stratix-core",
       "details": "创建项目配置文件 package.json 和 tsconfig.json",
-      "files": ["package.json", "tsconfig.json"]
+      "files": [
+        "package.json",
+        "tsconfig.json"
+      ]
     },
     {
       "timestamp": "2026-02-22T14:46:00.000000",
@@ -30,7 +35,9 @@
       "action": "install_dependencies",
       "feature": "stratix-core",
       "details": "安装项目依赖，包括 mitt 和 TypeScript 相关包",
-      "files": ["package-lock.json"]
+      "files": [
+        "package-lock.json"
+      ]
     },
     {
       "timestamp": "2026-02-22T14:47:00.000000",
@@ -38,7 +45,9 @@
       "action": "implement_feature",
       "feature": "stratix-core",
       "details": "实现 Feature 1: 统一数据协议定义 (stratix-protocol.ts)",
-      "files": ["src/stratix-core/stratix-protocol.ts"]
+      "files": [
+        "src/stratix-core/stratix-protocol.ts"
+      ]
     },
     {
       "timestamp": "2026-02-22T14:48:00.000000",
@@ -46,7 +55,9 @@
       "action": "implement_feature",
       "feature": "stratix-core",
       "details": "实现 Feature 2: 事件总线实现 (StratixEventBus.ts)",
-      "files": ["src/stratix-core/StratixEventBus.ts"]
+      "files": [
+        "src/stratix-core/StratixEventBus.ts"
+      ]
     },
     {
       "timestamp": "2026-02-22T14:49:00.000000",
@@ -54,7 +65,9 @@
       "action": "implement_feature",
       "feature": "stratix-core",
       "details": "实现 Feature 3: 全局类型声明 (types/index.d.ts)",
-      "files": ["src/stratix-core/types/index.d.ts"]
+      "files": [
+        "src/stratix-core/types/index.d.ts"
+      ]
     },
     {
       "timestamp": "2026-02-22T14:50:00.000000",
@@ -62,7 +75,10 @@
       "action": "implement_feature",
       "feature": "stratix-core",
       "details": "实现 Feature 4: 模块导出与文档 (index.ts + README.md)",
-      "files": ["src/stratix-core/index.ts", "src/stratix-core/README.md"]
+      "files": [
+        "src/stratix-core/index.ts",
+        "src/stratix-core/README.md"
+      ]
     },
     {
       "timestamp": "2026-02-22T14:51:00.000000",
@@ -71,6 +87,36 @@
       "feature": "stratix-core",
       "details": "运行类型检查和构建验证，所有测试通过",
       "files": []
+    },
+    {
+      "id": "log_20260222223246_90fb027a",
+      "timestamp": "2026-02-22T22:32:46.434751",
+      "operator": "system",
+      "operator_type": "human",
+      "action_type": "spec_create",
+      "target": {
+        "type": "feature",
+        "id": "feature_001"
+      },
+      "details": {
+        "spec_path": "specs/feature_001.md",
+        "created_at": "2026-02-22T22:32:46.434127"
+      }
+    },
+    {
+      "id": "log_20260222223350_033a2e8b",
+      "timestamp": "2026-02-22T22:33:50.599452",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "spec_create",
+      "target": {
+        "type": "feature",
+        "id": "feature_001"
+      },
+      "details": {
+        "spec_path": "/Users/kingj/code/Stratix/.long-run-agent/specs/feature_001.md",
+        "created_at": "2026-02-22T22:33:50.599025"
+      }
     }
   ],
   "index": {
@@ -78,7 +124,13 @@
       "AI": {
         "actions": 9,
         "last_action": "2026-02-22T14:51:00.000000"
-      }
+      },
+      "system": [
+        "log_20260222223246_90fb027a"
+      ],
+      "cli": [
+        "log_20260222223350_033a2e8b"
+      ]
     },
     "by_action": {
       "create_feature_spec": 1,
@@ -86,13 +138,21 @@
       "create_config_files": 1,
       "install_dependencies": 1,
       "implement_feature": 4,
-      "build_and_verify": 1
+      "build_and_verify": 1,
+      "spec_create": [
+        "log_20260222223246_90fb027a",
+        "log_20260222223350_033a2e8b"
+      ]
     },
     "by_feature": {
       "stratix-core": {
         "actions": 9,
         "status": "completed"
-      }
+      },
+      "feature_001": [
+        "log_20260222223246_90fb027a",
+        "log_20260222223350_033a2e8b"
+      ]
     }
   }
 }

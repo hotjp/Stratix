@@ -2,7 +2,7 @@
  * Stratix OpenClaw Adapter - 连接池管理
  * 
  * 负责管理多个 OpenClaw 实例的连接池
- * 支持适配器缓存、复用和自动选择
+ * 支持适配器缓存、复用、自动重连和健康检查
  */
 
 import { StratixOpenClawConfig } from '@/stratix-core/stratix-protocol';
@@ -10,19 +10,102 @@ import { OpenClawAdapterInterface } from './types';
 import { LocalOpenClawAdapter } from './LocalOpenClawAdapter';
 import { RemoteOpenClawAdapter } from './RemoteOpenClawAdapter';
 
+export interface ConnectionInfo {
+  key: string;
+  endpoint: string;
+  accountId: string;
+  status: 'connected' | 'disconnected' | 'error' | 'reconnecting';
+  lastUsed: number;
+  createdAt: number;
+  errorCount: number;
+  lastError?: string;
+}
+
+export interface ConnectionPoolOptions {
+  maxConnections?: number;
+  idleTimeout?: number;
+  reconnectAttempts?: number;
+  reconnectDelay?: number;
+  healthCheckInterval?: number;
+}
+
+export interface PoolStats {
+  totalConnections: number;
+  activeConnections: number;
+  idleConnections: number;
+  errorConnections: number;
+}
+
+interface InternalConnection {
+  adapter: OpenClawAdapterInterface;
+  config: StratixOpenClawConfig;
+  info: ConnectionInfo;
+}
+
+const DEFAULT_OPTIONS: Required<ConnectionPoolOptions> = {
+  maxConnections: 100,
+  idleTimeout: 300000,
+  reconnectAttempts: 3,
+  reconnectDelay: 1000,
+  healthCheckInterval: 60000,
+};
+
 export class ConnectionPool {
-  private adapters: Map<string, OpenClawAdapterInterface> = new Map();
+  private connections: Map<string, InternalConnection> = new Map();
+  private options: Required<ConnectionPoolOptions>;
+  private healthCheckTimer?: ReturnType<typeof setInterval>;
+  private idleCheckTimer?: ReturnType<typeof setInterval>;
+
+  constructor(options?: ConnectionPoolOptions) {
+    this.options = { ...DEFAULT_OPTIONS, ...options };
+  }
 
   public async getAdapter(config: StratixOpenClawConfig): Promise<OpenClawAdapterInterface> {
-    const key = `${config.endpoint}:${config.accountId}`;
+    const key = this.generateKey(config);
 
-    if (!this.adapters.has(key)) {
-      const adapter = this.createAdapter(config);
-      await adapter.connect();
-      this.adapters.set(key, adapter);
+    if (this.connections.has(key)) {
+      const conn = this.connections.get(key)!;
+      conn.info.lastUsed = Date.now();
+      conn.info.status = 'connected';
+      return conn.adapter;
     }
 
-    return this.adapters.get(key)!;
+    if (this.connections.size >= this.options.maxConnections) {
+      await this.cleanupIdleConnections();
+    }
+
+    if (this.connections.size >= this.options.maxConnections) {
+      throw new Error('Connection pool exhausted: maximum connections reached');
+    }
+
+    return this.createAndConnect(config);
+  }
+
+  private async createAndConnect(config: StratixOpenClawConfig): Promise<OpenClawAdapterInterface> {
+    const key = this.generateKey(config);
+    const adapter = this.createAdapter(config);
+
+    const info: ConnectionInfo = {
+      key,
+      endpoint: config.endpoint,
+      accountId: config.accountId,
+      status: 'reconnecting',
+      lastUsed: Date.now(),
+      createdAt: Date.now(),
+      errorCount: 0,
+    };
+
+    this.connections.set(key, { adapter, config, info });
+
+    try {
+      await adapter.connect();
+      this.connections.get(key)!.info.status = 'connected';
+    } catch (error) {
+      this.connections.get(key)!.info.status = 'error';
+      this.connections.get(key)!.info.lastError = (error as Error).message;
+    }
+
+    return adapter;
   }
 
   private createAdapter(config: StratixOpenClawConfig): OpenClawAdapterInterface {
@@ -31,11 +114,163 @@ export class ConnectionPool {
     return isLocal ? new LocalOpenClawAdapter(config) : new RemoteOpenClawAdapter(config);
   }
 
+  public async releaseAdapter(key: string): Promise<void> {
+    const conn = this.connections.get(key);
+    if (conn) {
+      conn.info.lastUsed = Date.now();
+    }
+  }
+
+  public async removeAdapter(key: string): Promise<void> {
+    const conn = this.connections.get(key);
+    if (conn) {
+      try {
+        await conn.adapter.disconnect();
+      } catch {
+        // ignore disconnect errors
+      }
+      this.connections.delete(key);
+    }
+  }
+
   public async disconnectAll(): Promise<void> {
-    const disconnects = Array.from(this.adapters.values()).map((adapter) =>
-      adapter.disconnect()
-    );
+    const disconnects = Array.from(this.connections.values()).map(async (conn) => {
+      try {
+        await conn.adapter.disconnect();
+      } catch {
+        // ignore disconnect errors
+      }
+    });
     await Promise.all(disconnects);
-    this.adapters.clear();
+    this.connections.clear();
+    this.stopHealthCheck();
+  }
+
+  public getConnectionInfo(key: string): ConnectionInfo | null {
+    const conn = this.connections.get(key);
+    return conn ? { ...conn.info } : null;
+  }
+
+  public getAllConnectionInfo(): ConnectionInfo[] {
+    return Array.from(this.connections.values()).map((conn) => ({ ...conn.info }));
+  }
+
+  public getPoolStats(): PoolStats {
+    const connections = Array.from(this.connections.values());
+    const now = Date.now();
+    const idleThreshold = now - 60000;
+
+    return {
+      totalConnections: connections.length,
+      activeConnections: connections.filter((c) => c.info.lastUsed > idleThreshold).length,
+      idleConnections: connections.filter(
+        (c) => c.info.lastUsed <= idleThreshold && c.info.status === 'connected'
+      ).length,
+      errorConnections: connections.filter((c) => c.info.status === 'error').length,
+    };
+  }
+
+  public startHealthCheck(): void {
+    if (this.healthCheckTimer) return;
+
+    this.healthCheckTimer = setInterval(() => {
+      this.performHealthCheck();
+    }, this.options.healthCheckInterval);
+
+    this.idleCheckTimer = setInterval(() => {
+      this.cleanupIdleConnections();
+    }, this.options.idleTimeout / 2);
+  }
+
+  public stopHealthCheck(): void {
+    if (this.healthCheckTimer) {
+      clearInterval(this.healthCheckTimer);
+      this.healthCheckTimer = undefined;
+    }
+    if (this.idleCheckTimer) {
+      clearInterval(this.idleCheckTimer);
+      this.idleCheckTimer = undefined;
+    }
+  }
+
+  public async attemptReconnect(key: string): Promise<boolean> {
+    const conn = this.connections.get(key);
+    if (!conn) return false;
+
+    conn.info.status = 'reconnecting';
+
+    for (let attempt = 1; attempt <= this.options.reconnectAttempts; attempt++) {
+      try {
+        await conn.adapter.connect();
+        conn.info.status = 'connected';
+        conn.info.errorCount = 0;
+        conn.info.lastError = undefined;
+        return true;
+      } catch (error) {
+        conn.info.errorCount++;
+        conn.info.lastError = (error as Error).message;
+
+        if (attempt < this.options.reconnectAttempts) {
+          const delay = this.options.reconnectDelay * Math.pow(2, attempt - 1);
+          await this.sleep(delay);
+        }
+      }
+    }
+
+    conn.info.status = 'error';
+    return false;
+  }
+
+  private async cleanupIdleConnections(): Promise<void> {
+    const now = Date.now();
+    const idleConnections: string[] = [];
+
+    for (const [key, conn] of this.connections) {
+      if (now - conn.info.lastUsed > this.options.idleTimeout && conn.info.status !== 'error') {
+        idleConnections.push(key);
+      }
+    }
+
+    for (const key of idleConnections) {
+      await this.removeAdapter(key);
+    }
+  }
+
+  private async performHealthCheck(): Promise<void> {
+    for (const [key, conn] of this.connections) {
+      if (conn.info.status === 'error') {
+        await this.attemptReconnect(key);
+        continue;
+      }
+
+      try {
+        await conn.adapter.getStatus();
+        conn.info.status = 'connected';
+      } catch (error) {
+        this.handleConnectionError(key, error as Error);
+      }
+    }
+  }
+
+  private handleConnectionError(key: string, error: Error): void {
+    const conn = this.connections.get(key);
+    if (!conn) return;
+
+    conn.info.errorCount++;
+    conn.info.lastError = error.message;
+
+    if (conn.info.errorCount >= this.options.reconnectAttempts) {
+      conn.info.status = 'error';
+    }
+  }
+
+  private generateKey(config: StratixOpenClawConfig): string {
+    return `${config.endpoint}:${config.accountId}`;
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
+
+export default ConnectionPool;

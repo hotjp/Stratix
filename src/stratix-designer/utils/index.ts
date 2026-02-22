@@ -1,2 +1,4 @@
-export { ConfigValidator, ValidationResult, ValidationError } from './ConfigValidator';
-export { ConfigConverter, OpenClawAgentConfig, OpenClawTool } from './ConfigConverter';
+export { ConfigValidator } from './ConfigValidator';
+export type { ValidationResult, ValidationError } from './ConfigValidator';
+export { ConfigConverter } from './ConfigConverter';
+export type { OpenClawAgentConfig, OpenClawTool } from './ConfigConverter';

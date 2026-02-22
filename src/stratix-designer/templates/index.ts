@@ -1,4 +1,5 @@
 export { WriterHeroTemplate } from './WriterHeroTemplate';
 export { DevHeroTemplate } from './DevHeroTemplate';
 export { AnalystHeroTemplate } from './AnalystHeroTemplate';
-export { HeroTemplateBase, HeroType, generateAgentId, generateSkillId } from './types';
+export { generateAgentId, generateSkillId, getHeroColor } from './types';
+export type { HeroTemplateBase, HeroType } from './types';

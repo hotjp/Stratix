@@ -22,6 +22,7 @@ export {
 export { LocalOpenClawAdapter } from './LocalOpenClawAdapter';
 export { RemoteOpenClawAdapter } from './RemoteOpenClawAdapter';
 export { ConnectionPool } from './ConnectionPool';
+export type { ConnectionInfo, ConnectionPoolOptions, PoolStats } from './ConnectionPool';
 
 export function createOpenClawAdapter(config: StratixOpenClawConfig): OpenClawAdapterInterface {
   const isLocal =
@@ -29,4 +30,8 @@ export function createOpenClawAdapter(config: StratixOpenClawConfig): OpenClawAd
   return isLocal
     ? new LocalOpenClawAdapter(config)
     : new RemoteOpenClawAdapter(config);
+}
+
+export function createConnectionPool(options?: import('./ConnectionPool').ConnectionPoolOptions): ConnectionPool {
+  return new ConnectionPool(options);
 }

@@ -77,7 +77,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-defineEmits<{
+const emit = defineEmits<{
   confirm: [];
   cancel: [];
 }>();
@@ -99,11 +99,6 @@ const handleKeydown = (event: KeyboardEvent) => {
     emit('cancel');
   }
 };
-
-const emit = defineEmits<{
-  confirm: [];
-  cancel: [];
-}>();
 
 onMounted(() => {
   document.addEventListener('keydown', handleKeydown);

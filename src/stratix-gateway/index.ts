@@ -16,8 +16,8 @@ import templateRoutes from './api/routes/template';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const WS_PORT = parseInt(process.env.WS_PORT || '3001', 10);
+const PORT = process.env.PORT || 3010;
+const WS_PORT = parseInt(process.env.WS_PORT || '3011', 10);
 
 app.use(cors());
 app.use(express.json());

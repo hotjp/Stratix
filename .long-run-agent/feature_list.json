@@ -1,0 +1,25 @@
+{
+  "project_name": "Stratix",
+  "created_at": "2026-02-22T22:28:49.932198",
+  "features": [
+    {
+      "id": "feature_001",
+      "category": "核心功能",
+      "description": "角色生成器模块",
+      "steps": [
+        "实现 角色生成器模块",
+        "测试 角色生成器模块",
+        "验证 角色生成器模块"
+      ],
+      "priority": "P0",
+      "status": "pending",
+      "status_updated_at": "2026-02-22T22:32:46.432990",
+      "progress_percentage": 0,
+      "assignee": "",
+      "passes": false,
+      "created_at": "2026-02-22T22:32:46.433006",
+      "completed_at": null,
+      "spec_file": "specs/feature_001.md"
+    }
+  ]
+}

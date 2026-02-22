@@ -16,3 +16,12 @@ export function generateAgentId(type: HeroType): string {
 export function generateSkillId(action: string): string {
   return `stratix-skill-${action}`;
 }
+
+export function getHeroColor(type: HeroType | string): string {
+  const colors: Record<string, string> = {
+    writer: '#3B82F6',
+    dev: '#22C55E',
+    analyst: '#8B5CF6',
+  };
+  return colors[type] || '#64748B';
+}

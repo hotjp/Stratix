@@ -6,7 +6,7 @@
  */
 
 import { StratixSkillConfig, StratixAgentConfig, StratixCommandData } from '../../stratix-core/stratix-protocol';
-import { OpenClawConnector } from '../openclaw-connector/OpenClawConnector';
+import { ConnectionPool, OpenClawAction } from '../../stratix-openclaw-adapter';
 
 export type SkillType = 'copywriting' | 'development' | 'analysis' | 'custom';
 
@@ -37,13 +37,13 @@ export interface SkillHandler {
 }
 
 export class SkillExecutor {
-  private openClawConnector: OpenClawConnector;
+  private connectionPool: ConnectionPool;
   private hooks: Map<string, SkillHook[]> = new Map();
   private skillTypes: Map<SkillType, SkillHandler> = new Map();
   private globalHooks: SkillHook[] = [];
 
-  constructor(openClawConnector?: OpenClawConnector) {
-    this.openClawConnector = openClawConnector || new OpenClawConnector();
+  constructor(connectionPool?: ConnectionPool) {
+    this.connectionPool = connectionPool || new ConnectionPool();
     this.initBuiltInSkillTypes();
   }
 
@@ -96,14 +96,13 @@ export class SkillExecutor {
       }
 
       const action = this.buildAction(processedContext);
-      const result = await this.openClawConnector.execute(
-        processedContext.agentConfig.openClawConfig,
-        action
-      );
+      const adapter = await this.connectionPool.getAdapter(processedContext.agentConfig.openClawConfig);
+      const response = await adapter.execute(action as OpenClawAction);
 
       let executionResult: SkillExecutionResult = {
-        success: true,
-        data: result,
+        success: response.success,
+        data: response.data,
+        error: response.error,
         duration: Date.now() - startTime,
       };
 
@@ -236,6 +235,10 @@ export class SkillExecutor {
       agentConfig,
       requestId: requestId || `stratix-req-${Date.now()}`,
     };
+  }
+
+  public getConnectionPool(): ConnectionPool {
+    return this.connectionPool;
   }
 }
 

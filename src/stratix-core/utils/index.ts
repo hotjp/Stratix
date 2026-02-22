@@ -4,5 +4,6 @@
 
 export { StratixIdGenerator } from './StratixIdGenerator';
 export { StratixEventBuilder } from './StratixEventBuilder';
-export { StratixConfigValidator, ValidationResult } from './StratixConfigValidator';
+export { StratixConfigValidator } from './StratixConfigValidator';
+export type { ValidationResult } from './StratixConfigValidator';
 export { StratixRequestHelper } from './StratixRequestHelper';

@@ -33,6 +33,7 @@ npm-debug.log*
 stratix-data/
 stratix-backups/
 *.db.json
+assets/
 
 # Coverage
 coverage/

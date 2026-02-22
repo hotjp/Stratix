@@ -1,0 +1,9 @@
+{
+  "watch": ["src"],
+  "ext": "ts,json",
+  "ignore": ["src/**/*.test.ts", "src/**/*.spec.ts", "src/**/*.vue"],
+  "exec": "tsx src/stratix-gateway/index.ts",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}

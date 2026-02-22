@@ -357,6 +357,38 @@
         "to_status": "in_progress",
         "reason": "CLI 操作"
       }
+    },
+    {
+      "id": "log_20260222194017_d5c57194",
+      "timestamp": "2026-02-22T19:40:17.756309",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_005"
+      },
+      "details": {
+        "from_status": "pending_test",
+        "to_status": "pending_test",
+        "reason": "CLI 操作"
+      }
+    },
+    {
+      "id": "log_20260222194017_c49025b0",
+      "timestamp": "2026-02-22T19:40:17.810336",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_005"
+      },
+      "details": {
+        "from_status": "completed",
+        "to_status": "completed",
+        "reason": "CLI 操作"
+      }
     }
   ],
   "index": {
@@ -386,7 +418,9 @@
         "log_20260222191602_12ea07fe",
         "log_20260222192651_b679253c",
         "log_20260222192651_9601f33c",
-        "log_20260222193318_8145b2b2"
+        "log_20260222193318_8145b2b2",
+        "log_20260222194017_d5c57194",
+        "log_20260222194017_c49025b0"
       ]
     },
     "by_action": {
@@ -415,7 +449,9 @@
         "log_20260222191602_12ea07fe",
         "log_20260222192651_b679253c",
         "log_20260222192651_9601f33c",
-        "log_20260222193318_8145b2b2"
+        "log_20260222193318_8145b2b2",
+        "log_20260222194017_d5c57194",
+        "log_20260222194017_c49025b0"
       ]
     },
     "by_feature": {
@@ -450,7 +486,9 @@
       "feature_005": [
         "log_20260222143744_df9fcdf9",
         "log_20260222172152_107500eb",
-        "log_20260222193318_8145b2b2"
+        "log_20260222193318_8145b2b2",
+        "log_20260222194017_d5c57194",
+        "log_20260222194017_c49025b0"
       ]
     }
   }

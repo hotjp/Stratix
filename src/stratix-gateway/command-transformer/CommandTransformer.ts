@@ -6,13 +6,13 @@
  */
 
 import { StratixCommandData, StratixAgentConfig, StratixSkillConfig } from '../../stratix-core/stratix-protocol';
-import { OpenClawConnector } from '../openclaw-connector/OpenClawConnector';
+import { ConnectionPool, OpenClawAction } from '../../stratix-openclaw-adapter';
 
 export class CommandTransformer {
-  private openClawConnector: OpenClawConnector;
+  private connectionPool: ConnectionPool;
 
-  constructor(openClawConnector?: OpenClawConnector) {
-    this.openClawConnector = openClawConnector || new OpenClawConnector();
+  constructor(connectionPool?: ConnectionPool) {
+    this.connectionPool = connectionPool || new ConnectionPool();
   }
 
   public async transformAndExecute(
@@ -31,10 +31,14 @@ export class CommandTransformer {
 
     const action = this.parseExecuteScript(executeScript);
 
-    return await this.openClawConnector.execute(
-      agentConfig.openClawConfig,
-      action
-    );
+    const adapter = await this.connectionPool.getAdapter(agentConfig.openClawConfig);
+    const response = await adapter.execute(action as OpenClawAction);
+
+    if (!response.success) {
+      throw new Error(response.error || 'Execution failed');
+    }
+
+    return response.data;
   }
 
   private findSkill(
@@ -118,6 +122,10 @@ export class CommandTransformer {
     }
 
     return [...new Set(params)];
+  }
+
+  public getConnectionPool(): ConnectionPool {
+    return this.connectionPool;
   }
 }
 
