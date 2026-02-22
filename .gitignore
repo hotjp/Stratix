@@ -42,5 +42,5 @@ tmp/
 temp/
 *.tmp
 
-# Agent runtime
-.long-run-agent/
+# Agent runtime backups
+.long-run-agent/backup/

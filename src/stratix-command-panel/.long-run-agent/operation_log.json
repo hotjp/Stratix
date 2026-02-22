@@ -74,6 +74,81 @@
         "spec_path": "specs/feature_005.md",
         "created_at": "2026-02-22T14:37:44.457447"
       }
+    },
+    {
+      "id": "log_20260222172146_3f08a463",
+      "timestamp": "2026-02-22T17:21:46.082640",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "spec_create",
+      "target": {
+        "type": "feature",
+        "id": "feature_001"
+      },
+      "details": {
+        "spec_path": "/Users/kingj/code/Stratix/src/stratix-command-panel/.long-run-agent/specs/feature_001.md",
+        "created_at": "2026-02-22T17:21:46.082253"
+      }
+    },
+    {
+      "id": "log_20260222172147_a81379d0",
+      "timestamp": "2026-02-22T17:21:47.700315",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "spec_create",
+      "target": {
+        "type": "feature",
+        "id": "feature_002"
+      },
+      "details": {
+        "spec_path": "/Users/kingj/code/Stratix/src/stratix-command-panel/.long-run-agent/specs/feature_002.md",
+        "created_at": "2026-02-22T17:21:47.700175"
+      }
+    },
+    {
+      "id": "log_20260222172149_9b8b0441",
+      "timestamp": "2026-02-22T17:21:49.525960",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "spec_create",
+      "target": {
+        "type": "feature",
+        "id": "feature_003"
+      },
+      "details": {
+        "spec_path": "/Users/kingj/code/Stratix/src/stratix-command-panel/.long-run-agent/specs/feature_003.md",
+        "created_at": "2026-02-22T17:21:49.525795"
+      }
+    },
+    {
+      "id": "log_20260222172150_8e3e01b7",
+      "timestamp": "2026-02-22T17:21:50.963254",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "spec_create",
+      "target": {
+        "type": "feature",
+        "id": "feature_004"
+      },
+      "details": {
+        "spec_path": "/Users/kingj/code/Stratix/src/stratix-command-panel/.long-run-agent/specs/feature_004.md",
+        "created_at": "2026-02-22T17:21:50.962987"
+      }
+    },
+    {
+      "id": "log_20260222172152_107500eb",
+      "timestamp": "2026-02-22T17:21:52.112449",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "spec_create",
+      "target": {
+        "type": "feature",
+        "id": "feature_005"
+      },
+      "details": {
+        "spec_path": "/Users/kingj/code/Stratix/src/stratix-command-panel/.long-run-agent/specs/feature_005.md",
+        "created_at": "2026-02-22T17:21:52.112146"
+      }
     }
   ],
   "index": {
@@ -84,6 +159,13 @@
         "log_20260222143739_317ccfb3",
         "log_20260222143741_ed54f657",
         "log_20260222143744_df9fcdf9"
+      ],
+      "cli": [
+        "log_20260222172146_3f08a463",
+        "log_20260222172147_a81379d0",
+        "log_20260222172149_9b8b0441",
+        "log_20260222172150_8e3e01b7",
+        "log_20260222172152_107500eb"
       ]
     },
     "by_action": {
@@ -92,24 +174,34 @@
         "log_20260222143737_a0065cf4",
         "log_20260222143739_317ccfb3",
         "log_20260222143741_ed54f657",
-        "log_20260222143744_df9fcdf9"
+        "log_20260222143744_df9fcdf9",
+        "log_20260222172146_3f08a463",
+        "log_20260222172147_a81379d0",
+        "log_20260222172149_9b8b0441",
+        "log_20260222172150_8e3e01b7",
+        "log_20260222172152_107500eb"
       ]
     },
     "by_feature": {
       "feature_001": [
-        "log_20260222143736_c5148b60"
+        "log_20260222143736_c5148b60",
+        "log_20260222172146_3f08a463"
       ],
       "feature_002": [
-        "log_20260222143737_a0065cf4"
+        "log_20260222143737_a0065cf4",
+        "log_20260222172147_a81379d0"
       ],
       "feature_003": [
-        "log_20260222143739_317ccfb3"
+        "log_20260222143739_317ccfb3",
+        "log_20260222172149_9b8b0441"
       ],
       "feature_004": [
-        "log_20260222143741_ed54f657"
+        "log_20260222143741_ed54f657",
+        "log_20260222172150_8e3e01b7"
       ],
       "feature_005": [
-        "log_20260222143744_df9fcdf9"
+        "log_20260222143744_df9fcdf9",
+        "log_20260222172152_107500eb"
       ]
     }
   }
