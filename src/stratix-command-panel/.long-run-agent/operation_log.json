@@ -213,6 +213,54 @@
         "to_status": "in_progress",
         "reason": "CLI 操作"
       }
+    },
+    {
+      "id": "log_20260222185350_9fd0a65f",
+      "timestamp": "2026-02-22T18:53:50.046961",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_002"
+      },
+      "details": {
+        "from_status": "pending_test",
+        "to_status": "pending_test",
+        "reason": "CLI 操作"
+      }
+    },
+    {
+      "id": "log_20260222185350_5f6134da",
+      "timestamp": "2026-02-22T18:53:50.102251",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_002"
+      },
+      "details": {
+        "from_status": "completed",
+        "to_status": "completed",
+        "reason": "CLI 操作"
+      }
+    },
+    {
+      "id": "log_20260222190020_d7319542",
+      "timestamp": "2026-02-22T19:00:20.732438",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_003"
+      },
+      "details": {
+        "from_status": "in_progress",
+        "to_status": "in_progress",
+        "reason": "CLI 操作"
+      }
     }
   ],
   "index": {
@@ -233,7 +281,10 @@
         "log_20260222175952_e7558d49",
         "log_20260222182659_fa5ade9b",
         "log_20260222182700_6bb5344b",
-        "log_20260222184656_c83288fc"
+        "log_20260222184656_c83288fc",
+        "log_20260222185350_9fd0a65f",
+        "log_20260222185350_5f6134da",
+        "log_20260222190020_d7319542"
       ]
     },
     "by_action": {
@@ -253,7 +304,10 @@
         "log_20260222175952_e7558d49",
         "log_20260222182659_fa5ade9b",
         "log_20260222182700_6bb5344b",
-        "log_20260222184656_c83288fc"
+        "log_20260222184656_c83288fc",
+        "log_20260222185350_9fd0a65f",
+        "log_20260222185350_5f6134da",
+        "log_20260222190020_d7319542"
       ]
     },
     "by_feature": {
@@ -267,11 +321,14 @@
       "feature_002": [
         "log_20260222143737_a0065cf4",
         "log_20260222172147_a81379d0",
-        "log_20260222184656_c83288fc"
+        "log_20260222184656_c83288fc",
+        "log_20260222185350_9fd0a65f",
+        "log_20260222185350_5f6134da"
       ],
       "feature_003": [
         "log_20260222143739_317ccfb3",
-        "log_20260222172149_9b8b0441"
+        "log_20260222172149_9b8b0441",
+        "log_20260222190020_d7319542"
       ],
       "feature_004": [
         "log_20260222143741_ed54f657",

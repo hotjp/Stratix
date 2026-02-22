@@ -31,13 +31,13 @@
         "验证 参数表单编辑"
       ],
       "priority": "P0",
-      "status": "in_progress",
-      "status_updated_at": "2026-02-22T18:46:56.088101",
-      "progress_percentage": 0,
+      "status": "completed",
+      "status_updated_at": "2026-02-22T18:53:50.101043",
+      "progress_percentage": 100,
       "assignee": "stratix-team",
-      "passes": false,
+      "passes": true,
       "created_at": "2026-02-22T14:37:37.811943",
-      "completed_at": null,
+      "completed_at": "2026-02-22T18:53:50.101056",
       "spec_file": "specs/feature_002.md"
     },
     {
@@ -50,8 +50,8 @@
         "验证 指令构建与提交"
       ],
       "priority": "P0",
-      "status": "pending",
-      "status_updated_at": "2026-02-22T14:37:39.377004",
+      "status": "in_progress",
+      "status_updated_at": "2026-02-22T19:00:20.731575",
       "progress_percentage": 0,
       "assignee": "stratix-team",
       "passes": false,

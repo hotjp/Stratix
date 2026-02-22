@@ -110,6 +110,15 @@
         </div>
       </form>
     </template>
+
+    <ConfirmDialog
+      :visible="showConfirmDialog"
+      :skill-name="selectedSkill?.name || ''"
+      :agent-count="selectedAgentIds.length"
+      :params="formValues"
+      @confirm="executeCommands"
+      @cancel="showConfirmDialog = false"
+    />
   </div>
 </template>
 
@@ -118,11 +127,14 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import type { StratixSkillConfig, StratixSkillParameter, StratixFrontendOperationEvent } from '@/stratix-core/stratix-protocol';
 import StratixEventBus from '@/stratix-core/StratixEventBus';
 import { ParamValidator } from '../utils/ParamValidator';
+import { CommandBuilder } from '../utils/CommandBuilder';
+import ConfirmDialog from './ConfirmDialog.vue';
 
 const selectedSkill = ref<StratixSkillConfig | null>(null);
 const selectedAgentIds = ref<string[]>([]);
 const formValues = ref<Record<string, any>>({});
 const errors = ref<Record<string, string>>({});
+const showConfirmDialog = ref<boolean>(false);
 
 const parameters = computed<StratixSkillParameter[]>(() => {
   return selectedSkill.value?.parameters || [];
@@ -172,24 +184,26 @@ const handleSubmit = () => {
     return;
   }
 
-  const event: StratixFrontendOperationEvent = {
-    eventType: 'stratix:command_execute',
-    payload: {
-      agentIds: selectedAgentIds.value,
-      skill: selectedSkill.value,
-      command: {
-        commandId: `cmd-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        skillId: selectedSkill.value.skillId,
-        agentId: selectedAgentIds.value[0] || '',
-        params: { ...formValues.value },
-        executeAt: Date.now()
-      }
-    },
-    timestamp: Date.now(),
-    requestId: `stratix-req-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-  };
+  showConfirmDialog.value = true;
+};
 
-  StratixEventBus.emit(event);
+const executeCommands = () => {
+  if (!selectedSkill.value || selectedAgentIds.value.length === 0) {
+    showConfirmDialog.value = false;
+    return;
+  }
+
+  const events = CommandBuilder.buildBatchCommandEvents(
+    selectedAgentIds.value,
+    selectedSkill.value,
+    formValues.value
+  );
+
+  for (const event of events) {
+    StratixEventBus.emit(event);
+  }
+
+  showConfirmDialog.value = false;
 };
 
 const handleSkillSelected = (event: StratixFrontendOperationEvent) => {
