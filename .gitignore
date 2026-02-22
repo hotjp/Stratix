@@ -38,6 +38,9 @@ assets/
 # Coverage
 coverage/
 
+# Test results
+test-results/
+
 # Temporary files
 tmp/
 temp/
