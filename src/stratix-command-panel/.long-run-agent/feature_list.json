@@ -31,8 +31,8 @@
         "验证 参数表单编辑"
       ],
       "priority": "P0",
-      "status": "pending",
-      "status_updated_at": "2026-02-22T14:37:37.811935",
+      "status": "in_progress",
+      "status_updated_at": "2026-02-22T18:46:56.088101",
       "progress_percentage": 0,
       "assignee": "stratix-team",
       "passes": false,

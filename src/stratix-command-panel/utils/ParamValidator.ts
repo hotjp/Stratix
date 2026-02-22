@@ -1,0 +1,144 @@
+import type { StratixSkillParameter } from '@/stratix-core/stratix-protocol';
+
+export interface ValidationResult {
+  isValid: boolean;
+  errorMessage: string;
+}
+
+export interface ParamValidateRule {
+  paramId: string;
+  required?: boolean;
+  type?: 'string' | 'number' | 'boolean' | 'object';
+  min?: number;
+  max?: number;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  customValidator?: (value: any) => ValidationResult;
+}
+
+export class ParamValidator {
+  static validate(param: StratixSkillParameter, value: any): ValidationResult {
+    if (param.required && ParamValidator.isEmpty(value)) {
+      return {
+        isValid: false,
+        errorMessage: `${param.name} 为必填项`
+      };
+    }
+
+    if (!param.required && ParamValidator.isEmpty(value)) {
+      return { isValid: true, errorMessage: '' };
+    }
+
+    switch (param.type) {
+      case 'string':
+        return ParamValidator.validateString(param, value);
+      case 'number':
+        return ParamValidator.validateNumber(param, value);
+      case 'boolean':
+        return ParamValidator.validateBoolean(value);
+      case 'object':
+        return ParamValidator.validateObject(value);
+      default:
+        return { isValid: true, errorMessage: '' };
+    }
+  }
+
+  private static isEmpty(value: any): boolean {
+    if (value === null || value === undefined) return true;
+    if (typeof value === 'string' && value.trim() === '') return true;
+    return false;
+  }
+
+  private static validateString(param: StratixSkillParameter, value: any): ValidationResult {
+    if (typeof value !== 'string') {
+      return {
+        isValid: false,
+        errorMessage: `${param.name} 必须为文本类型`
+      };
+    }
+    return { isValid: true, errorMessage: '' };
+  }
+
+  private static validateNumber(param: StratixSkillParameter, value: any): ValidationResult {
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    
+    if (isNaN(numValue)) {
+      return {
+        isValid: false,
+        errorMessage: `${param.name} 必须为有效数字`
+      };
+    }
+
+    return { isValid: true, errorMessage: '' };
+  }
+
+  private static validateBoolean(value: any): ValidationResult {
+    if (typeof value !== 'boolean' && value !== 'true' && value !== 'false' && value !== 1 && value !== 0) {
+      return {
+        isValid: false,
+        errorMessage: '必须为布尔值'
+      };
+    }
+    return { isValid: true, errorMessage: '' };
+  }
+
+  private static validateObject(value: any): ValidationResult {
+    if (typeof value !== 'object' || Array.isArray(value)) {
+      return {
+        isValid: false,
+        errorMessage: '必须为对象类型'
+      };
+    }
+    return { isValid: true, errorMessage: '' };
+  }
+
+  static validateAll(
+    params: StratixSkillParameter[],
+    values: Record<string, any>
+  ): { isValid: boolean; errors: Record<string, string> } {
+    const errors: Record<string, string> = {};
+    let isValid = true;
+
+    for (const param of params) {
+      const value = values[param.paramId];
+      const result = this.validate(param, value);
+      
+      if (!result.isValid) {
+        isValid = false;
+        errors[param.paramId] = result.errorMessage;
+      }
+    }
+
+    return { isValid, errors };
+  }
+
+  static getDefaultValue(param: StratixSkillParameter): any {
+    if (param.defaultValue !== undefined && param.defaultValue !== null) {
+      return param.defaultValue;
+    }
+
+    switch (param.type) {
+      case 'string':
+        return '';
+      case 'number':
+        return 0;
+      case 'boolean':
+        return false;
+      case 'object':
+        return {};
+      default:
+        return null;
+    }
+  }
+
+  static initializeFormValues(params: StratixSkillParameter[]): Record<string, any> {
+    const values: Record<string, any> = {};
+    for (const param of params) {
+      values[param.paramId] = this.getDefaultValue(param);
+    }
+    return values;
+  }
+}
+
+export default ParamValidator;
