@@ -94,11 +94,14 @@ interface OpenClawConnectionConfig {
 4. 与 stratix-protocol.ts 保持一致
 
 ## Acceptance Criteria
-- [ ] 所有接口定义完整且类型安全
-- [ ] TypeScript 编译无错误
-- [ ] 符合 init.md 中的接口规范
-- [ ] 包含完整的 JSDoc 注释
-- [ ] 导出所有类型供其他模块使用
+- [x] 所有接口定义完整且类型安全
+- [x] TypeScript 编译无错误
+- [x] 符合 init.md 中的接口规范
+- [x] 包含完整的 JSDoc 注释
+- [x] 导出所有类型供其他模块使用
+
+## Status
+✅ 已完成
 
 ## Estimated Time
 0.5 天
