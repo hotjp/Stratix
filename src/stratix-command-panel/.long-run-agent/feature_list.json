@@ -69,13 +69,13 @@
         "验证 指令日志展示"
       ],
       "priority": "P1",
-      "status": "in_progress",
-      "status_updated_at": "2026-02-22T19:16:02.434285",
-      "progress_percentage": 0,
+      "status": "completed",
+      "status_updated_at": "2026-02-22T19:26:51.953886",
+      "progress_percentage": 100,
       "assignee": "stratix-team",
-      "passes": false,
+      "passes": true,
       "created_at": "2026-02-22T14:37:41.236301",
-      "completed_at": null,
+      "completed_at": "2026-02-22T19:26:51.953899",
       "spec_file": "specs/feature_004.md"
     },
     {
@@ -88,8 +88,8 @@
         "验证 指令取消功能"
       ],
       "priority": "P1",
-      "status": "pending",
-      "status_updated_at": "2026-02-22T14:37:44.457050",
+      "status": "in_progress",
+      "status_updated_at": "2026-02-22T19:33:18.686877",
       "progress_percentage": 0,
       "assignee": "stratix-team",
       "passes": false,

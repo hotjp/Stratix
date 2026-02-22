@@ -309,6 +309,54 @@
         "to_status": "in_progress",
         "reason": "CLI 操作"
       }
+    },
+    {
+      "id": "log_20260222192651_b679253c",
+      "timestamp": "2026-02-22T19:26:51.903358",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_004"
+      },
+      "details": {
+        "from_status": "pending_test",
+        "to_status": "pending_test",
+        "reason": "CLI 操作"
+      }
+    },
+    {
+      "id": "log_20260222192651_9601f33c",
+      "timestamp": "2026-02-22T19:26:51.954638",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_004"
+      },
+      "details": {
+        "from_status": "completed",
+        "to_status": "completed",
+        "reason": "CLI 操作"
+      }
+    },
+    {
+      "id": "log_20260222193318_8145b2b2",
+      "timestamp": "2026-02-22T19:33:18.687490",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_005"
+      },
+      "details": {
+        "from_status": "in_progress",
+        "to_status": "in_progress",
+        "reason": "CLI 操作"
+      }
     }
   ],
   "index": {
@@ -335,7 +383,10 @@
         "log_20260222190020_d7319542",
         "log_20260222190548_c966325c",
         "log_20260222190548_139aa12f",
-        "log_20260222191602_12ea07fe"
+        "log_20260222191602_12ea07fe",
+        "log_20260222192651_b679253c",
+        "log_20260222192651_9601f33c",
+        "log_20260222193318_8145b2b2"
       ]
     },
     "by_action": {
@@ -361,7 +412,10 @@
         "log_20260222190020_d7319542",
         "log_20260222190548_c966325c",
         "log_20260222190548_139aa12f",
-        "log_20260222191602_12ea07fe"
+        "log_20260222191602_12ea07fe",
+        "log_20260222192651_b679253c",
+        "log_20260222192651_9601f33c",
+        "log_20260222193318_8145b2b2"
       ]
     },
     "by_feature": {
@@ -389,11 +443,14 @@
       "feature_004": [
         "log_20260222143741_ed54f657",
         "log_20260222172150_8e3e01b7",
-        "log_20260222191602_12ea07fe"
+        "log_20260222191602_12ea07fe",
+        "log_20260222192651_b679253c",
+        "log_20260222192651_9601f33c"
       ],
       "feature_005": [
         "log_20260222143744_df9fcdf9",
-        "log_20260222172152_107500eb"
+        "log_20260222172152_107500eb",
+        "log_20260222193318_8145b2b2"
       ]
     }
   }

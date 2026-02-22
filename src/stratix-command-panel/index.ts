@@ -10,6 +10,7 @@ export { default as ParamForm } from './components/ParamForm.vue';
 export { default as ConfirmDialog } from './components/ConfirmDialog.vue';
 export { default as CommandLog } from './components/CommandLog.vue';
 export { default as LogDetailModal } from './components/LogDetailModal.vue';
+export { default as CancelConfirmDialog } from './components/CancelConfirmDialog.vue';
 
 // 导出工具
 export { ParamValidator } from './utils/ParamValidator';

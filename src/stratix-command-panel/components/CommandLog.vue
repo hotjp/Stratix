@@ -99,7 +99,19 @@
           </div>
         </div>
 
-        <div class="log-arrow">
+        <button
+          v-if="canCancel(log.status)"
+          class="cancel-btn"
+          type="button"
+          @click.stop="showCancelConfirm(log)"
+          title="取消指令"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+
+        <div v-else class="log-arrow">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M9 5l7 7-7 7"></path>
           </svg>
@@ -112,6 +124,13 @@
       :log="selectedLog"
       @close="showDetailModal = false"
     />
+
+    <CancelConfirmDialog
+      :visible="showCancelDialog"
+      :log="logToCancel"
+      @confirm="confirmCancel"
+      @cancel="showCancelDialog = false"
+    />
   </div>
 </template>
 
@@ -120,6 +139,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import type { StratixStateSyncEvent, StratixFrontendOperationEvent } from '@/stratix-core/stratix-protocol';
 import StratixEventBus from '@/stratix-core/StratixEventBus';
 import LogDetailModal from './LogDetailModal.vue';
+import CancelConfirmDialog from './CancelConfirmDialog.vue';
 
 export interface CommandLogItem {
   commandId: string;
@@ -141,6 +161,8 @@ const statusFilter = ref<string>('all');
 const showFilterMenu = ref<boolean>(false);
 const showDetailModal = ref<boolean>(false);
 const selectedLog = ref<CommandLogItem | null>(null);
+const showCancelDialog = ref<boolean>(false);
+const logToCancel = ref<CommandLogItem | null>(null);
 
 const MAX_LOGS = 10;
 
@@ -205,6 +227,40 @@ const updateLogStatus = (
 const showLogDetail = (log: CommandLogItem) => {
   selectedLog.value = log;
   showDetailModal.value = true;
+};
+
+const canCancel = (status: CommandLogItem['status']): boolean => {
+  return status === 'pending' || status === 'running';
+};
+
+const showCancelConfirm = (log: CommandLogItem) => {
+  logToCancel.value = log;
+  showCancelDialog.value = true;
+};
+
+const confirmCancel = () => {
+  if (!logToCancel.value) return;
+
+  const event: StratixFrontendOperationEvent = {
+    eventType: 'stratix:command_cancel',
+    payload: {
+      commandId: logToCancel.value.commandId
+    },
+    timestamp: Date.now(),
+    requestId: `stratix-req-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  };
+
+  StratixEventBus.emit(event);
+
+  updateLogStatus(
+    logToCancel.value.commandId,
+    'failed',
+    undefined,
+    '用户取消'
+  );
+
+  showCancelDialog.value = false;
+  logToCancel.value = null;
 };
 
 const handleCommandStatusUpdate = (event: StratixStateSyncEvent) => {
@@ -571,6 +627,32 @@ defineExpose({
 
 .log-item:hover .log-arrow svg {
   color: #22C55E;
+}
+
+.cancel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 200ms ease;
+  flex-shrink: 0;
+}
+
+.cancel-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #EF4444;
+}
+
+.cancel-btn svg {
+  width: 14px;
+  height: 14px;
+  color: #EF4444;
+  stroke-width: 2.5;
 }
 
 .logs-container::-webkit-scrollbar {
