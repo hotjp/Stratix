@@ -12,3 +12,6 @@ export { default as StratixEventBus } from './StratixEventBus';
 
 // 导出类型定义
 export * from './types/index';
+
+// 导出工具类
+export * from './utils/index';
