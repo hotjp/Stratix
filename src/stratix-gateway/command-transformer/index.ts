@@ -3,3 +3,11 @@
  */
 
 export { CommandTransformer } from './CommandTransformer';
+export { SkillExecutor } from './SkillExecutor';
+export type {
+  SkillType,
+  SkillExecutionContext,
+  SkillExecutionResult,
+  SkillHook,
+  SkillHandler,
+} from './SkillExecutor';

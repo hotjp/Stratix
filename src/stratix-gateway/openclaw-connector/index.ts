@@ -3,3 +3,9 @@
  */
 
 export { OpenClawConnector } from './OpenClawConnector';
+export { ConnectionPool } from './ConnectionPool';
+export type {
+  ConnectionInfo,
+  ConnectionPoolOptions,
+  PoolStats,
+} from './ConnectionPool';

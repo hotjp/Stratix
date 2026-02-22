@@ -3,3 +3,9 @@
  */
 
 export { ConfigManager } from './ConfigManager';
+export { TemplateManager } from './TemplateManager';
+export type {
+  StratixTemplate,
+  TemplateFilter,
+  TemplateExportData,
+} from './TemplateManager';
