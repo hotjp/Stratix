@@ -25,10 +25,17 @@ export class StratixDataStore {
     if (this.initialized) return;
     
     await fs.ensureDir(path.dirname(this.dbPath));
-    await this.db.read();
     
-    if (!this.db.data) {
-      this.db.data = { ...DEFAULT_DB };
+    try {
+      await this.db.read();
+    } catch {
+      // File doesn't exist or is invalid, use default
+    }
+    
+    if (!this.db.data || !this.db.data.metadata) {
+      this.db.data = JSON.parse(JSON.stringify(DEFAULT_DB));
+      this.db.data.metadata.createdAt = Date.now();
+      this.db.data.metadata.updatedAt = Date.now();
       await this.db.write();
     }
     

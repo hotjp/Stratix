@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, provide } from 'vue';
 import { createStratixRTS } from './stratix-rts';
-import { StratixEventBus, StratixAgentConfig, StratixFrontendOperationEvent, StratixStateSyncEvent } from './stratix-core';
+import { StratixEventBus, StratixAgentConfig, StratixFrontendOperationEvent } from './stratix-core';
 import MainLayout from './components/MainLayout.vue';
+import CharacterCreatorModal from './components/CharacterCreatorModal.vue';
 import { WriterHeroTemplate, DevHeroTemplate, AnalystHeroTemplate, generateAgentId } from './stratix-designer';
+import type { SavedCharacter } from './stratix-character-creator/types';
 
 const gameContainer = ref<HTMLElement | null>(null);
 const isGameReady = ref(false);
@@ -11,6 +13,8 @@ const agents = ref<StratixAgentConfig[]>([]);
 const selectedAgentIds = ref<string[]>([]);
 const currentSkill = ref<any>(null);
 const commandLogs = ref<any[]>([]);
+const showCharacterCreator = ref(false);
+const editCharacterId = ref<string | undefined>(undefined);
 
 let game: Phaser.Game | null = null;
 let eventBus: StratixEventBus;
@@ -50,30 +54,6 @@ const handleCommandExecute = async (event: StratixFrontendOperationEvent) => {
     log.status = result.code === 200 ? 'success' : 'failed';
   } catch (error) {
     log.status = 'failed';
-  }
-};
-
-const createDemoAgents = async () => {
-  const templates = [
-    { template: WriterHeroTemplate, type: 'writer' as const },
-    { template: DevHeroTemplate, type: 'dev' as const },
-    { template: AnalystHeroTemplate, type: 'analyst' as const }
-  ];
-
-  for (const { template, type } of templates) {
-    const t = new template();
-    const config = t.getTemplate(generateAgentId(type));
-    agents.value.push(config);
-    
-    try {
-      await fetch('/api/stratix/config/agent/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
-      });
-    } catch (e) {
-      console.warn('Failed to save agent to backend:', e);
-    }
   }
 };
 
@@ -129,6 +109,29 @@ const deleteAgent = async (agentId: string) => {
   selectedAgentIds.value = selectedAgentIds.value.filter(id => id !== agentId);
 };
 
+const openCharacterCreator = (characterId?: string) => {
+  editCharacterId.value = characterId;
+  showCharacterCreator.value = true;
+};
+
+const closeCharacterCreator = () => {
+  showCharacterCreator.value = false;
+  editCharacterId.value = undefined;
+};
+
+const handleCharacterCreated = (character: SavedCharacter) => {
+  console.log('Character created:', character);
+  closeCharacterCreator();
+};
+
+const handleCharacterUpdated = (character: SavedCharacter) => {
+  console.log('Character updated:', character);
+};
+
+const handleCharacterDeleted = (characterId: string) => {
+  console.log('Character deleted:', characterId);
+};
+
 onMounted(async () => {
   eventBus = StratixEventBus.getInstance();
   
@@ -143,10 +146,6 @@ onMounted(async () => {
     }
   } catch (e) {
     console.warn('Failed to load agents from backend:', e);
-  }
-  
-  if (agents.value.length === 0) {
-    await createDemoAgents();
   }
   
   if (gameContainer.value) {
@@ -193,11 +192,21 @@ onUnmounted(() => {
     @create-agent="createAgent"
     @delete-agent="deleteAgent"
     @select-agent="selectAgentInRTS"
+    @open-character-creator="openCharacterCreator()"
   >
     <template #game>
       <div ref="gameContainer" class="game-container"></div>
     </template>
   </MainLayout>
+  
+  <CharacterCreatorModal
+    :visible="showCharacterCreator"
+    :edit-character-id="editCharacterId"
+    @close="closeCharacterCreator"
+    @created="handleCharacterCreated"
+    @updated="handleCharacterUpdated"
+    @deleted="handleCharacterDeleted"
+  />
 </template>
 
 <style>

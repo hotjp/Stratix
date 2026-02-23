@@ -19,16 +19,20 @@ log('初始化 Stratix RTS...', 'info');
 const game = new Phaser.Game({
   type: Phaser.AUTO,
   parent: container,
-  width: 800,
-  height: 600,
+  width: container.clientWidth,
+  height: container.clientHeight,
   backgroundColor: 0x1a1a2e,
   pixelArt: true,
   scene: [StratixRTSGameScene],
   scale: {
-    mode: Phaser.Scale.NONE,
-    width: 800,
-    height: 600
+    mode: Phaser.Scale.RESIZE,
+    width: container.clientWidth,
+    height: container.clientHeight
   }
+});
+
+window.addEventListener('resize', () => {
+  game.scale.resize(container.clientWidth, container.clientHeight);
 });
 
 let agentCounter = 0;

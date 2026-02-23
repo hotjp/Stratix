@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/electron",
+    "module": "commonjs",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "declaration": false,
+    "declarationMap": false,
+    "inlineSourceMap": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": ["src/electron/**/*", "src/stratix-tailscale/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

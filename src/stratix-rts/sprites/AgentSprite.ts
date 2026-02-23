@@ -16,7 +16,8 @@ export const COLORS = {
   type: {
     writer: 0x4A90E2,
     dev: 0x9B59B6,
-    analyst: 0xE67E22
+    analyst: 0xE67E22,
+    custom: 0x00ffff
   },
   ui: {
     selection: 0x00ff00
@@ -35,20 +36,48 @@ export class AgentSprite extends Phaser.GameObjects.Container {
   private currentStatus: AgentStatus = 'online';
   private isSelected: boolean = false;
   private busyTween: Phaser.Tweens.Tween | null = null;
+  private isDragging: boolean = false;
+  private dragOffset: { x: number; y: number } = { x: 0, y: 0 };
+  private customTextureKey: string | null = null;
+  private placeholderTextureKey: string | null = null;
+  private characterId: string | null = null;
+  private currentDirection: number = 0;
+  private currentAnimation: 'idle' | 'walk' | 'run' = 'idle';
+  private isUsingPlaceholder: boolean = false;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, config: StratixAgentConfig) {
+  constructor(
+    scene: Phaser.Scene, 
+    x: number, 
+    y: number, 
+    config: StratixAgentConfig,
+    textureKey?: string,
+    isPlaceholder: boolean = false
+  ) {
     super(scene, x, y);
     
     this.agentId = config.agentId;
     this.agentName = config.name;
     this.agentType = config.type;
+    this.customTextureKey = textureKey || null;
+    this.isUsingPlaceholder = isPlaceholder;
+    
+    if (config.character) {
+      this.characterId = config.character.characterId;
+    }
 
     this.selectionRing = scene.add.graphics();
     this.drawSelectionRing();
     this.selectionRing.setVisible(false);
     this.add(this.selectionRing);
 
-    this.sprite = scene.add.sprite(0, 0, 'stratix-agent');
+    const texture = textureKey || 'stratix-agent';
+    this.sprite = scene.add.sprite(0, 0, texture);
+    
+    if (textureKey && config.character) {
+      this.sprite.setScale(0.75);
+      this.playAnimation('idle', 0);
+    }
+    
     this.add(this.sprite);
 
     this.typeIcon = scene.add.graphics();
@@ -59,7 +88,7 @@ export class AgentSprite extends Phaser.GameObjects.Container {
     this.drawStatusIndicator(COLORS.status.online);
     this.add(this.statusIndicator);
 
-    this.nameText = scene.add.text(0, -24, config.name, {
+    this.nameText = scene.add.text(0, -32, config.name, {
       fontSize: '12px',
       fontFamily: 'Arial, sans-serif',
       color: '#ffffff',
@@ -72,8 +101,63 @@ export class AgentSprite extends Phaser.GameObjects.Container {
     this.sprite.setInteractive({ useHandCursor: true });
     this.setData('agentId', config.agentId);
     this.setData('agentType', config.type);
+    this.setData('isCustom', !!textureKey);
     
     this.setDepth(y);
+  }
+
+  public replaceTexture(newTextureKey: string): void {
+    if (!this.scene) return;
+
+    const wasPlaying = this.sprite.anims.isPlaying;
+    const currentAnim = this.sprite.anims.currentAnim;
+    
+    this.customTextureKey = newTextureKey;
+    this.isUsingPlaceholder = false;
+    
+    this.sprite.setTexture(newTextureKey);
+    
+    if (currentAnim) {
+      const animName = currentAnim.key.split('_').slice(1, 3).join('_');
+      const direction = this.currentDirection;
+      this.playAnimation(animName as 'idle' | 'walk' | 'run', direction);
+    } else {
+      this.playAnimation('idle', this.currentDirection);
+    }
+
+    this.scene.tweens.add({
+      targets: this.sprite,
+      alpha: { from: 0.5, to: 1 },
+      duration: 300,
+      ease: 'Sine.easeOut'
+    });
+
+    console.log(`[AgentSprite] Replaced texture for ${this.agentId} with ${newTextureKey}`);
+  }
+
+  public getCharacterId(): string | null {
+    return this.characterId;
+  }
+
+  public isPlaceholderTexture(): boolean {
+    return this.isUsingPlaceholder;
+  }
+
+  public playAnimation(animation: 'idle' | 'walk' | 'run', direction?: number): void {
+    if (!this.customTextureKey) return;
+    
+    const dir = direction ?? this.currentDirection;
+    this.currentDirection = dir;
+    this.currentAnimation = animation;
+    
+    const animKey = `${this.customTextureKey}_${animation}_${dir}`;
+    if (this.scene.anims.exists(animKey)) {
+      this.sprite.play(animKey);
+    }
+  }
+
+  public setDirection(direction: number): void {
+    this.currentDirection = direction;
   }
 
   private drawSelectionRing(): void {
@@ -142,6 +226,7 @@ export class AgentSprite extends Phaser.GameObjects.Container {
   public setHighlight(selected: boolean): void {
     this.isSelected = selected;
     this.selectionRing.setVisible(selected);
+    this.setData('isSelected', selected);
     
     if (selected) {
       this.sprite.setTint(COLORS.ui.selection);
@@ -224,6 +309,32 @@ export class AgentSprite extends Phaser.GameObjects.Container {
 
   public updateDepth(): void {
     this.setDepth(this.y);
+  }
+
+  public startDrag(worldX: number, worldY: number): void {
+    this.isDragging = true;
+    this.dragOffset.x = this.x - worldX;
+    this.dragOffset.y = this.y - worldY;
+    this.setDepth(10000);
+  }
+
+  public updateDrag(worldX: number, worldY: number): void {
+    if (!this.isDragging) return;
+    this.x = worldX + this.dragOffset.x;
+    this.y = worldY + this.dragOffset.y;
+  }
+
+  public endDrag(): void {
+    this.isDragging = false;
+    this.updateDepth();
+  }
+
+  public isSpriteDragging(): boolean {
+    return this.isDragging;
+  }
+
+  public isCustomCharacter(): boolean {
+    return this.customTextureKey !== null;
   }
 
   public destroy(): void {

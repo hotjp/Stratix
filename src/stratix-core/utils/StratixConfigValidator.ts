@@ -12,6 +12,7 @@ import {
   StratixMemoryConfig,
   StratixOpenClawConfig,
   StratixSkillParameter,
+  CharacterData,
 } from '../stratix-protocol';
 import StratixIdGenerator from './StratixIdGenerator';
 
@@ -44,7 +45,8 @@ export class StratixConfigValidator {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    // 必填字段校验
+    const isCustomCharacter = config.type === 'custom' || config.character !== undefined;
+
     if (!config.agentId) {
       errors.push('agentId 是必填字段');
     } else if (!this.idGenerator.isValidAgentId(config.agentId)) {
@@ -59,7 +61,6 @@ export class StratixConfigValidator {
       errors.push('type 是必填字段');
     }
 
-    // Soul 配置校验
     if (!config.soul) {
       errors.push('soul 配置是必填的');
     } else {
@@ -68,7 +69,6 @@ export class StratixConfigValidator {
       warnings.push(...soulResult.warnings);
     }
 
-    // Memory 配置校验
     if (!config.memory) {
       errors.push('memory 配置是必填的');
     } else {
@@ -77,9 +77,12 @@ export class StratixConfigValidator {
       warnings.push(...memoryResult.warnings);
     }
 
-    // Skills 配置校验
     if (!config.skills || config.skills.length === 0) {
-      errors.push('skills 至少需要配置一个技能');
+      if (!isCustomCharacter) {
+        errors.push('skills 至少需要配置一个技能');
+      } else {
+        warnings.push('建议为自定义角色配置技能');
+      }
     } else {
       config.skills.forEach((skill, index) => {
         const skillResult = this.validateSkillConfig(skill);
@@ -88,22 +91,30 @@ export class StratixConfigValidator {
       });
     }
 
-    // Model 配置校验
     if (!config.model) {
-      errors.push('model 配置是必填的');
+      if (!isCustomCharacter) {
+        errors.push('model 配置是必填的');
+      }
     } else {
       const modelResult = this.validateModelConfig(config.model);
       errors.push(...modelResult.errors);
       warnings.push(...modelResult.warnings);
     }
 
-    // OpenClaw 配置校验
     if (!config.openClawConfig) {
-      errors.push('openClawConfig 是必填的');
+      if (!isCustomCharacter) {
+        errors.push('openClawConfig 是必填的');
+      }
     } else {
       const openClawResult = this.validateOpenClawConfig(config.openClawConfig);
       errors.push(...openClawResult.errors);
       warnings.push(...openClawResult.warnings);
+    }
+
+    if (config.character) {
+      const characterResult = this.validateCharacterData(config.character);
+      errors.push(...characterResult.errors);
+      warnings.push(...characterResult.warnings);
     }
 
     return {
@@ -111,6 +122,43 @@ export class StratixConfigValidator {
       errors,
       warnings,
     };
+  }
+
+  /**
+   * 校验 Character 数据
+   */
+  public validateCharacterData(config: CharacterData): ValidationResult {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    if (!config.characterId) {
+      errors.push('characterId 是必填字段');
+    }
+
+    if (!config.bodyType) {
+      errors.push('bodyType 是必填字段');
+    }
+
+    if (!config.parts || typeof config.parts !== 'object') {
+      errors.push('parts 必须是对象');
+    }
+
+    if (!config.skillTree) {
+      warnings.push('skillTree 建议设置');
+    } else {
+      if (!Array.isArray(config.skillTree.selectedNodes)) {
+        errors.push('skillTree.selectedNodes 必须是数组');
+      }
+      if (!Array.isArray(config.skillTree.unlockedNodes)) {
+        errors.push('skillTree.unlockedNodes 必须是数组');
+      }
+    }
+
+    if (!config.attributes || typeof config.attributes !== 'object') {
+      warnings.push('attributes 建议设置');
+    }
+
+    return { valid: errors.length === 0, errors, warnings };
   }
 
   /**

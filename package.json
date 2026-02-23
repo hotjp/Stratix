@@ -21,7 +21,13 @@
     "test:debug": "playwright test --debug",
     "clean": "rm -rf dist",
     "start": "node dist/stratix-gateway/index.js",
-    "start:dev": "tsx src/stratix-gateway/index.ts"
+    "start:dev": "tsx src/stratix-gateway/index.ts",
+    "electron": "npm run build:electron && electron . --config electron.config.json",
+    "electron:dev": "concurrently \"npm run dev:frontend\" \"npm run build:electron && electron . --config electron.config.json\"",
+    "electron:build": "npm run build && npm run build:electron && electron-builder --config electron.config.json",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "tailscale:test": "tsx src/stratix-tailscale/test-embedded.ts",
+    "tailscale:login": "tsx src/stratix-tailscale/interactive-login.ts"
   },
   "keywords": [
     "stratix",
@@ -29,7 +35,8 @@
     "agent",
     "rts",
     "phaser",
-    "openclaw"
+    "openclaw",
+    "tailscale"
   ],
   "author": "Stratix Team",
   "license": "MIT",
@@ -40,6 +47,7 @@
     "element-plus": "^2.13.2",
     "express": "^5.2.1",
     "fs-extra": "^11.2.0",
+    "http-proxy-middleware": "^3.0.5",
     "lowdb": "^7.0.1",
     "mitt": "^3.0.1",
     "phaser": "^3.90.0",
@@ -57,6 +65,8 @@
     "@typescript-eslint/parser": "^6.19.0",
     "@vitejs/plugin-vue": "^6.0.4",
     "concurrently": "^9.2.1",
+    "electron": "^40.6.0",
+    "electron-builder": "^26.8.1",
     "eslint": "^8.56.0",
     "nodemon": "^3.1.13",
     "tsc-alias": "^1.8.16",

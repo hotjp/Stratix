@@ -21,6 +21,7 @@ const emit = defineEmits<{
   (e: 'create-agent', type: 'writer' | 'dev' | 'analyst'): void;
   (e: 'delete-agent', agentId: string): void;
   (e: 'select-agent', agentId: string): void;
+  (e: 'open-character-creator'): void;
 }>();
 
 const activeTab = ref<'agents' | 'command' | 'logs'>('agents');
@@ -119,6 +120,7 @@ const handleCancelCommand = () => {
             @create="emit('create-agent', $event)"
             @delete="emit('delete-agent', $event)"
             @select="emit('select-agent', $event)"
+            @open-character-creator="emit('open-character-creator')"
           />
           
           <div v-else-if="activeTab === 'command'" class="command-tab">

@@ -117,6 +117,70 @@
         "spec_path": "/Users/kingj/code/Stratix/.long-run-agent/specs/feature_001.md",
         "created_at": "2026-02-22T22:33:50.599025"
       }
+    },
+    {
+      "id": "log_20260222225530_a566367c",
+      "timestamp": "2026-02-22T22:55:30.639918",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_001"
+      },
+      "details": {
+        "from_status": "in_progress",
+        "to_status": "in_progress",
+        "reason": "CLI 操作"
+      }
+    },
+    {
+      "id": "log_20260222235056_52704c9b",
+      "timestamp": "2026-02-22T23:50:56.085987",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_001"
+      },
+      "details": {
+        "from_status": "pending_test",
+        "to_status": "pending_test",
+        "reason": "CLI 操作"
+      }
+    },
+    {
+      "id": "log_20260223001020_99c96c44",
+      "timestamp": "2026-02-23T00:10:20.545897",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_001"
+      },
+      "details": {
+        "from_status": "completed",
+        "to_status": "completed",
+        "reason": "CLI 操作"
+      }
+    },
+    {
+      "id": "log_20260223012849_845fc391",
+      "timestamp": "2026-02-23T01:28:49.488191",
+      "operator": "cli",
+      "operator_type": "human",
+      "action_type": "status_change",
+      "target": {
+        "type": "feature",
+        "id": "feature_001"
+      },
+      "details": {
+        "from_status": "completed",
+        "to_status": "completed",
+        "reason": "CLI 操作"
+      }
     }
   ],
   "index": {
@@ -129,7 +193,11 @@
         "log_20260222223246_90fb027a"
       ],
       "cli": [
-        "log_20260222223350_033a2e8b"
+        "log_20260222223350_033a2e8b",
+        "log_20260222225530_a566367c",
+        "log_20260222235056_52704c9b",
+        "log_20260223001020_99c96c44",
+        "log_20260223012849_845fc391"
       ]
     },
     "by_action": {
@@ -142,6 +210,12 @@
       "spec_create": [
         "log_20260222223246_90fb027a",
         "log_20260222223350_033a2e8b"
+      ],
+      "status_change": [
+        "log_20260222225530_a566367c",
+        "log_20260222235056_52704c9b",
+        "log_20260223001020_99c96c44",
+        "log_20260223012849_845fc391"
       ]
     },
     "by_feature": {
@@ -151,7 +225,11 @@
       },
       "feature_001": [
         "log_20260222223246_90fb027a",
-        "log_20260222223350_033a2e8b"
+        "log_20260222223350_033a2e8b",
+        "log_20260222225530_a566367c",
+        "log_20260222235056_52704c9b",
+        "log_20260223001020_99c96c44",
+        "log_20260223012849_845fc391"
       ]
     }
   }

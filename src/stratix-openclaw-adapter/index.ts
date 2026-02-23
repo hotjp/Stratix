@@ -5,26 +5,41 @@
  */
 
 import { StratixOpenClawConfig } from '@/stratix-core/stratix-protocol';
-import { OpenClawAdapterInterface } from './types';
+import type { OpenClawAdapterInterface } from './types';
 import { LocalOpenClawAdapter } from './LocalOpenClawAdapter';
 import { RemoteOpenClawAdapter } from './RemoteOpenClawAdapter';
+import { GatewayOpenClawAdapter } from './GatewayOpenClawAdapter';
 import { ConnectionPool } from './ConnectionPool';
 
-export {
+export type {
   OpenClawAdapterInterface,
   OpenClawAction,
   OpenClawResponse,
   OpenClawStatus,
   OpenClawEvent,
   OpenClawConnectionConfig,
+  ChatOptions,
+  ChatResponse,
+  WebSocketMessage,
+  WebSocketResponse,
+  WebSocketEvent,
+  OpenAIChatCompletionRequest,
+  OpenAIChatCompletionResponse,
 } from './types';
 
 export { LocalOpenClawAdapter } from './LocalOpenClawAdapter';
 export { RemoteOpenClawAdapter } from './RemoteOpenClawAdapter';
+export { GatewayOpenClawAdapter } from './GatewayOpenClawAdapter';
 export { ConnectionPool } from './ConnectionPool';
-export type { ConnectionInfo, ConnectionPoolOptions, PoolStats } from './ConnectionPool';
+export type { ConnectionInfo, ConnectionPoolOptions, PoolStats, InvokeAllResult } from './ConnectionPool';
+
+const isBrowser = typeof window !== 'undefined';
 
 export function createOpenClawAdapter(config: StratixOpenClawConfig): OpenClawAdapterInterface {
+  if (config.connectionMode === 'gateway' || (isBrowser && config.connectionMode !== 'direct')) {
+    return new GatewayOpenClawAdapter(config);
+  }
+  
   const isLocal =
     config.endpoint.includes('localhost') || config.endpoint.includes('127.0.0.1');
   return isLocal

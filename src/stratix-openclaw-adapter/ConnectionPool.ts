@@ -27,6 +27,7 @@ export interface ConnectionPoolOptions {
   reconnectAttempts?: number;
   reconnectDelay?: number;
   healthCheckInterval?: number;
+  connectionBatchDelay?: number;
 }
 
 export interface PoolStats {
@@ -34,6 +35,13 @@ export interface PoolStats {
   activeConnections: number;
   idleConnections: number;
   errorConnections: number;
+}
+
+export interface InvokeAllResult<T = unknown> {
+  key: string;
+  success: boolean;
+  result?: T;
+  error?: string;
 }
 
 interface InternalConnection {
@@ -48,6 +56,7 @@ const DEFAULT_OPTIONS: Required<ConnectionPoolOptions> = {
   reconnectAttempts: 3,
   reconnectDelay: 1000,
   healthCheckInterval: 60000,
+  connectionBatchDelay: 100,
 };
 
 export class ConnectionPool {
@@ -270,6 +279,96 @@ export class ConnectionPool {
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  public async initializeAll(configs: StratixOpenClawConfig[]): Promise<Map<string, boolean>> {
+    const results = new Map<string, boolean>();
+
+    for (const config of configs) {
+      const key = this.generateKey(config);
+      try {
+        await this.getAdapter(config);
+        results.set(key, true);
+      } catch {
+        results.set(key, false);
+      }
+      await this.sleep(this.options.connectionBatchDelay);
+    }
+
+    return results;
+  }
+
+  public async invokeAll<T = unknown>(
+    tool: string,
+    args?: Record<string, unknown>,
+    options?: { sessionKey?: string; action?: string }
+  ): Promise<InvokeAllResult<T>[]> {
+    const results: InvokeAllResult<T>[] = [];
+    const connectedAdapters = Array.from(this.connections.entries()).filter(
+      ([_, conn]) => conn.info.status === 'connected'
+    );
+
+    await Promise.all(
+      connectedAdapters.map(async ([key, conn]) => {
+        try {
+          const result = await conn.adapter.invokeTool<T>(tool, args, options);
+          results.push({ key, success: true, result });
+        } catch (error) {
+          results.push({ key, success: false, error: (error as Error).message });
+        }
+      })
+    );
+
+    return results;
+  }
+
+  public async invokeFirst<T = unknown>(
+    tool: string,
+    args?: Record<string, unknown>,
+    options?: { sessionKey?: string; action?: string }
+  ): Promise<{ key: string; result: T }> {
+    for (const [key, conn] of this.connections) {
+      if (conn.info.status !== 'connected') continue;
+
+      try {
+        const result = await conn.adapter.invokeTool<T>(tool, args, options);
+        return { key, result };
+      } catch {
+        continue;
+      }
+    }
+
+    throw new Error('No available connections');
+  }
+
+  public async invokeRoundRobin<T = unknown>(
+    tool: string,
+    args?: Record<string, unknown>,
+    options?: { sessionKey?: string; action?: string }
+  ): Promise<{ key: string; result: T }> {
+    const connectedKeys = Array.from(this.connections.entries())
+      .filter(([_, conn]) => conn.info.status === 'connected')
+      .map(([key]) => key);
+
+    if (connectedKeys.length === 0) {
+      throw new Error('No available connections');
+    }
+
+    const key = connectedKeys[Math.floor(Math.random() * connectedKeys.length)];
+    const conn = this.connections.get(key)!;
+
+    const result = await conn.adapter.invokeTool<T>(tool, args, options);
+    return { key, result };
+  }
+
+  public getConnectedKeys(): string[] {
+    return Array.from(this.connections.entries())
+      .filter(([_, conn]) => conn.info.status === 'connected')
+      .map(([key]) => key);
+  }
+
+  public getAdapterByKey(key: string): OpenClawAdapterInterface | null {
+    return this.connections.get(key)?.adapter || null;
   }
 }
 

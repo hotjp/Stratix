@@ -1,10 +1,3 @@
-/**
- * Stratix OpenClaw Adapter - 远程 OpenClaw 适配器
- * 
- * 负责与远程 OpenClaw 服务进行通信
- * 支持 HTTP API 和 API Key 认证
- */
-
 import { StratixOpenClawConfig } from '@/stratix-core/stratix-protocol';
 import {
   OpenClawAdapterInterface,
@@ -12,15 +5,28 @@ import {
   OpenClawResponse,
   OpenClawStatus,
   OpenClawEvent,
+  ChatOptions,
+  ChatResponse,
+  OpenAIChatCompletionRequest,
+  OpenAIChatCompletionResponse,
 } from './types';
 import axios from 'axios';
 
 export class RemoteOpenClawAdapter implements OpenClawAdapterInterface {
   private config: StratixOpenClawConfig;
   private subscribers: ((event: OpenClawEvent) => void)[] = [];
+  private axiosInstance;
 
   constructor(config: StratixOpenClawConfig) {
     this.config = config;
+    this.axiosInstance = axios.create({
+      baseURL: config.endpoint,
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(config.apiKey && { Authorization: `Bearer ${config.apiKey}` }),
+      },
+    });
   }
 
   public async connect(): Promise<void> {
@@ -32,42 +38,23 @@ export class RemoteOpenClawAdapter implements OpenClawAdapterInterface {
 
   public async disconnect(): Promise<void> {}
 
-  public async execute(action: OpenClawAction): Promise<OpenClawResponse> {
-    try {
-      const headers: Record<string, string> = {};
-      if (this.config.apiKey) {
-        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
-      }
-
-      const response = await axios.post(
-        `${this.config.endpoint}/api/execute`,
-        { accountId: this.config.accountId, ...action },
-        { headers }
-      );
-      return { success: true, data: response.data };
-    } catch (error) {
-      return { success: false, error: (error as Error).message };
-    }
+  public async execute(_action: OpenClawAction): Promise<OpenClawResponse> {
+    return {
+      success: false,
+      error: 'Remote adapter does not support WebSocket RPC. Use sendMessage or openaiChatCompletion instead.',
+    };
   }
 
   public async getStatus(): Promise<OpenClawStatus> {
     try {
-      const headers: Record<string, string> = {};
-      if (this.config.apiKey) {
-        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
-      }
-
-      const response = await axios.get(
-        `${this.config.endpoint}/api/status/${this.config.accountId}`,
-        { headers }
-      );
+      const response = await this.axiosInstance.get('/health');
       return {
         connected: true,
         accountId: this.config.accountId,
         lastActive: Date.now(),
         ...response.data,
       };
-    } catch (error) {
+    } catch {
       return {
         connected: false,
         accountId: this.config.accountId,
@@ -78,5 +65,80 @@ export class RemoteOpenClawAdapter implements OpenClawAdapterInterface {
 
   public subscribe(callback: (event: OpenClawEvent) => void): void {
     this.subscribers.push(callback);
+  }
+
+  public async sendMessage(message: string, options?: ChatOptions): Promise<ChatResponse> {
+    return this.openaiChatCompletion({
+      messages: [{ role: 'user', content: message }],
+    }).then((response) => ({
+      messageId: response.id,
+      content: response.choices[0]?.message?.content || '',
+      role: 'assistant',
+      sessionId: options?.sessionId,
+      done: true,
+    }));
+  }
+
+  public async openaiChatCompletion(
+    request: OpenAIChatCompletionRequest
+  ): Promise<OpenAIChatCompletionResponse> {
+    try {
+      const response = await this.axiosInstance.post<OpenAIChatCompletionResponse>(
+        '/v1/chat/completions',
+        request
+      );
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.error?.message || error.message;
+        throw new Error(`OpenAI API error: ${message}`);
+      }
+      throw error;
+    }
+  }
+
+  public async listModels(): Promise<string[]> {
+    try {
+      const response = await this.axiosInstance.get<{ data: Array<{ id: string }> }>('/v1/models');
+      return response.data.data.map((m) => m.id);
+    } catch {
+      return [];
+    }
+  }
+
+  public async invokeTool<T = unknown>(
+    tool: string,
+    args?: Record<string, unknown>,
+    options?: { sessionKey?: string; action?: string }
+  ): Promise<T> {
+    const request = {
+      tool,
+      args: args || {},
+      sessionKey: options?.sessionKey,
+      action: options?.action,
+    };
+
+    const response = await this.axiosInstance.post<{ ok: boolean; result?: T; error?: { message: string } }>(
+      '/tools/invoke',
+      request
+    );
+
+    if (!response.data.ok) {
+      throw new Error(response.data.error?.message || 'Tool invocation failed');
+    }
+
+    let result: unknown = response.data.result;
+    if (result && typeof result === 'object' && 'content' in result) {
+      const content = (result as { content: Array<{ type: string; text: string }> }).content;
+      if (Array.isArray(content) && content[0]?.type === 'text') {
+        try {
+          result = JSON.parse(content[0].text);
+        } catch {
+          result = content[0].text;
+        }
+      }
+    }
+
+    return result as T;
   }
 }

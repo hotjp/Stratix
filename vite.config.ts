@@ -18,11 +18,18 @@ export default defineConfig({
     },
   },
 
+  publicDir: 'assets',
+
   server: {
-    port: 5173,
+    port: 7523,
     proxy: {
       '/api': {
-        target: 'http://localhost:3010',
+        target: 'http://localhost:7524',
+        changeOrigin: true,
+        ws: true,
+      },
+      '/textures': {
+        target: 'http://localhost:7524',
         changeOrigin: true,
       },
     },
@@ -43,9 +50,11 @@ export default defineConfig({
 
   optimizeDeps: {
     include: ['vue', 'axios', 'phaser', 'element-plus', 'mitt'],
+    exclude: ['lowdb', 'fs-extra'],
   },
 
   define: {
     'process.env': {},
+    global: 'globalThis',
   },
 });

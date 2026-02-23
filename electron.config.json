@@ -1,0 +1,38 @@
+{
+  "appId": "com.stratix.app",
+  "productName": "Stratix",
+  "directories": {
+    "output": "release",
+    "buildResources": "electron/resources"
+  },
+  "files": [
+    "dist/**/*",
+    "bin/**/*",
+    "!dist/electron/**/*.map",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": "bin",
+      "to": "bin",
+      "filter": ["**/*"]
+    }
+  ],
+  "mac": {
+    "category": "public.app-category.productivity",
+    "target": ["dmg", "zip"],
+    "icon": "electron/icons/icon.icns"
+  },
+  "win": {
+    "target": ["nsis", "portable"],
+    "icon": "electron/icons/icon.ico"
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "icon": "electron/icons"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true
+  }
+}

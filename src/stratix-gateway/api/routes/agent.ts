@@ -1,20 +1,31 @@
-/**
- * Stratix Gateway - Agent 配置 API 路由
- */
-
 import { Router, Request, Response } from 'express';
-import { ConfigManager } from '../../config-manager/ConfigManager';
+import { dataStoreService } from '../../dataStoreService';
 import { StratixRequestHelper } from '../../../stratix-core/utils';
+import { StratixConfigValidator } from '../../../stratix-core/utils';
 
 const router = Router();
-const configManager = new ConfigManager();
 const requestHelper = StratixRequestHelper.getInstance();
+const validator = StratixConfigValidator.getInstance();
 
 router.post('/create', async (req: Request, res: Response) => {
   try {
     const agentConfig = req.body;
-    const result = await configManager.createAgent(agentConfig);
-    res.json(result);
+    
+    const validation = validator.validateAgentConfig(agentConfig);
+    if (!validation.valid) {
+      res.json(requestHelper.badRequest(`配置验证失败: ${validation.errors.join(', ')}`));
+      return;
+    }
+
+    const store = dataStoreService.getStore();
+    const existing = await store.getAgent(agentConfig.agentId);
+    if (existing) {
+      res.json(requestHelper.error(409, 'Agent already exists'));
+      return;
+    }
+
+    await store.saveAgent(agentConfig);
+    res.json(requestHelper.success(agentConfig, 'Agent created'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
@@ -23,8 +34,16 @@ router.post('/create', async (req: Request, res: Response) => {
 router.put('/save', async (req: Request, res: Response) => {
   try {
     const agentConfig = req.body;
-    const result = await configManager.saveAgent(agentConfig);
-    res.json(result);
+    
+    const validation = validator.validateAgentConfig(agentConfig);
+    if (!validation.valid) {
+      res.json(requestHelper.badRequest(`配置验证失败: ${validation.errors.join(', ')}`));
+      return;
+    }
+
+    const store = dataStoreService.getStore();
+    await store.saveAgent(agentConfig);
+    res.json(requestHelper.success(agentConfig, 'Agent saved'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
@@ -33,7 +52,8 @@ router.put('/save', async (req: Request, res: Response) => {
 router.get('/get', async (req: Request, res: Response) => {
   try {
     const { agentId } = req.query;
-    const agent = await configManager.getAgent(agentId as string);
+    const store = dataStoreService.getStore();
+    const agent = await store.getAgent(agentId as string);
     
     if (!agent) {
       res.json(requestHelper.notFound('Agent not found'));
@@ -48,8 +68,14 @@ router.get('/get', async (req: Request, res: Response) => {
 router.delete('/delete', async (req: Request, res: Response) => {
   try {
     const { agentId } = req.query;
-    const result = await configManager.deleteAgent(agentId as string);
-    res.json(result);
+    const store = dataStoreService.getStore();
+    const deleted = await store.deleteAgent(agentId as string);
+    
+    if (!deleted) {
+      res.json(requestHelper.notFound('Agent not found'));
+    } else {
+      res.json(requestHelper.success(null, 'Agent deleted'));
+    }
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
@@ -57,7 +83,8 @@ router.delete('/delete', async (req: Request, res: Response) => {
 
 router.get('/list', async (req: Request, res: Response) => {
   try {
-    const agents = await configManager.listAgents();
+    const store = dataStoreService.getStore();
+    const agents = await store.listAgents();
     res.json(requestHelper.success(agents, 'Agents fetched'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));

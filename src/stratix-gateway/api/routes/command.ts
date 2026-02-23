@@ -1,17 +1,12 @@
-/**
- * Stratix Gateway - 指令执行 API 路由
- */
-
 import { Router, Request, Response } from 'express';
 import { CommandTransformer } from '../../command-transformer/CommandTransformer';
-import { ConfigManager } from '../../config-manager/ConfigManager';
+import { dataStoreService } from '../../dataStoreService';
 import { StatusSyncService } from '../websocket/StatusSync';
 import { StratixCommandData } from '../../../stratix-core/stratix-protocol';
 import { StratixRequestHelper } from '../../../stratix-core/utils';
 
 const router = Router();
 const commandTransformer = new CommandTransformer();
-const configManager = new ConfigManager();
 const requestHelper = StratixRequestHelper.getInstance();
 let statusSyncService: StatusSyncService | null = null;
 
@@ -24,7 +19,8 @@ router.post('/execute', async (req: Request, res: Response): Promise<void> => {
     const command: StratixCommandData = req.body;
     const { agentId } = command;
 
-    const agentConfig = await configManager.getAgent(agentId);
+    const store = dataStoreService.getStore();
+    const agentConfig = await store.getAgent(agentId);
     if (!agentConfig) {
       res.json(requestHelper.notFound('Agent not found'));
       return;

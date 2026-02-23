@@ -1,57 +1,60 @@
-/**
- * Stratix Gateway - 模板管理 API 路由
- */
-
 import { Router, Request, Response } from 'express';
-import { TemplateManager } from '../../config-manager/TemplateManager';
+import { dataStoreService } from '../../dataStoreService';
 import { StratixRequestHelper } from '../../../stratix-core/utils';
+import { StratixAgentConfig } from '../../../stratix-core/stratix-protocol';
 
 const router = Router();
-const templateManager = new TemplateManager();
 const requestHelper = StratixRequestHelper.getInstance();
 
 router.get('/list', async (req: Request, res: Response) => {
   try {
-    const { category, tags, keyword } = req.query;
-    const filter: any = {};
-    if (category) filter.category = category;
-    if (tags) filter.tags = String(tags).split(',');
-    if (keyword) filter.keyword = keyword;
-
-    const templates = await templateManager.listTemplates(filter);
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    const templates = await templateLibrary.getAllTemplates();
     res.json(requestHelper.success(templates, 'Templates fetched'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
 });
 
-router.get('/categories', async (req: Request, res: Response) => {
+router.get('/preset', async (req: Request, res: Response) => {
   try {
-    const categories = await templateManager.getCategories();
-    res.json(requestHelper.success(categories, 'Categories fetched'));
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    const preset = templateLibrary.getPresetTemplates();
+    res.json(requestHelper.success(preset, 'Preset templates fetched'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
 });
 
-router.get('/tags', async (req: Request, res: Response) => {
+router.get('/custom', async (req: Request, res: Response) => {
   try {
-    const tags = await templateManager.getTags();
-    res.json(requestHelper.success(tags, 'Tags fetched'));
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    const custom = await templateLibrary.getCustomTemplates();
+    res.json(requestHelper.success(custom, 'Custom templates fetched'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
 });
 
-router.get('/:templateId', async (req: Request, res: Response): Promise<void> => {
+router.get('/:agentId', async (req: Request, res: Response): Promise<void> => {
   try {
-    const templateId = String(req.params.templateId);
-    const template = await templateManager.getTemplate(templateId);
-    if (!template) {
-      res.status(404).json(requestHelper.notFound('Template not found'));
+    const agentId = String(req.params.agentId);
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    
+    const preset = templateLibrary.getPresetTemplates().find(t => t.agentId === agentId);
+    if (preset) {
+      res.json(requestHelper.success(preset, 'Template fetched'));
       return;
     }
-    res.json(requestHelper.success(template, 'Template fetched'));
+
+    const custom = await templateLibrary.getCustomTemplates();
+    const customTemplate = custom.find(t => t.agentId === agentId);
+    if (customTemplate) {
+      res.json(requestHelper.success(customTemplate, 'Template fetched'));
+      return;
+    }
+
+    res.status(404).json(requestHelper.notFound('Template not found'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
@@ -59,28 +62,87 @@ router.get('/:templateId', async (req: Request, res: Response): Promise<void> =>
 
 router.post('/create', async (req: Request, res: Response) => {
   try {
-    const result = await templateManager.createTemplate(req.body);
-    res.status(result.code === 200 ? 200 : 400).json(result);
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    const config: StratixAgentConfig = req.body;
+    
+    if (!config.agentId) {
+      config.agentId = templateLibrary.generateId();
+    }
+    
+    await templateLibrary.saveCustomTemplate(config);
+    res.json(requestHelper.success(config, 'Template created'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
 });
 
-router.put('/:templateId', async (req: Request, res: Response): Promise<void> => {
+router.put('/:agentId', async (req: Request, res: Response): Promise<void> => {
   try {
-    const templateId = String(req.params.templateId);
-    const result = await templateManager.updateTemplate(templateId, req.body);
-    res.status(result.code).json(result);
+    const agentId = String(req.params.agentId);
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    
+    const custom = await templateLibrary.getCustomTemplates();
+    const existing = custom.find(t => t.agentId === agentId);
+    
+    if (!existing) {
+      res.status(404).json(requestHelper.notFound('Template not found'));
+      return;
+    }
+
+    const config: StratixAgentConfig = {
+      ...req.body,
+      agentId
+    };
+    
+    await templateLibrary.saveCustomTemplate(config);
+    res.json(requestHelper.success(config, 'Template updated'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
 });
 
-router.delete('/:templateId', async (req: Request, res: Response): Promise<void> => {
+router.delete('/:agentId', async (req: Request, res: Response): Promise<void> => {
   try {
-    const templateId = String(req.params.templateId);
-    const result = await templateManager.deleteTemplate(templateId);
-    res.status(result.code).json(result);
+    const agentId = String(req.params.agentId);
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    
+    const deleted = await templateLibrary.deleteCustomTemplate(agentId);
+    if (!deleted) {
+      res.status(404).json(requestHelper.notFound('Template not found or is preset'));
+      return;
+    }
+    
+    res.json(requestHelper.success(null, 'Template deleted'));
+  } catch (error) {
+    res.status(500).json(requestHelper.serverError('Internal server error'));
+  }
+});
+
+router.post('/apply/:type', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const type = req.params.type as 'writer' | 'dev' | 'analyst';
+    const overrides = req.body;
+    
+    if (!['writer', 'dev', 'analyst'].includes(type)) {
+      res.status(400).json(requestHelper.badRequest('Invalid template type. Use: writer, dev, analyst'));
+      return;
+    }
+
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    const config = templateLibrary.createFromTemplate(type, overrides?.name);
+    
+    if (!config) {
+      res.status(404).json(requestHelper.notFound('Template not found'));
+      return;
+    }
+
+    const result: StratixAgentConfig = {
+      ...config,
+      ...overrides,
+      agentId: overrides?.agentId || config.agentId
+    };
+
+    res.json(requestHelper.success(result, 'Agent config created from template'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
@@ -88,9 +150,31 @@ router.delete('/:templateId', async (req: Request, res: Response): Promise<void>
 
 router.post('/import', async (req: Request, res: Response) => {
   try {
-    const { data, conflictStrategy = 'skip' } = req.body;
-    const result = await templateManager.importTemplates(data, conflictStrategy);
-    res.json(requestHelper.success(result, 'Templates imported'));
+    const { templates } = req.body;
+    
+    if (!Array.isArray(templates)) {
+      res.status(400).json(requestHelper.badRequest('Invalid data format. Expected { templates: [] }'));
+      return;
+    }
+
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    let imported = 0;
+    let skipped = 0;
+
+    for (const template of templates) {
+      try {
+        const config: StratixAgentConfig = {
+          ...template,
+          agentId: template.agentId || templateLibrary.generateId()
+        };
+        await templateLibrary.saveCustomTemplate(config);
+        imported++;
+      } catch {
+        skipped++;
+      }
+    }
+
+    res.json(requestHelper.success({ imported, skipped }, 'Templates imported'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }
@@ -98,24 +182,26 @@ router.post('/import', async (req: Request, res: Response) => {
 
 router.post('/export', async (req: Request, res: Response) => {
   try {
-    const { templateIds } = req.body;
-    const exportData = await templateManager.exportTemplates(templateIds);
-    res.json(requestHelper.success(exportData, 'Templates exported'));
-  } catch (error) {
-    res.status(500).json(requestHelper.serverError('Internal server error'));
-  }
-});
-
-router.post('/apply/:templateId', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const templateId = String(req.params.templateId);
-    const overrides = req.body;
-    const config = await templateManager.createFromTemplate(templateId, overrides);
-    if (!config) {
-      res.status(404).json(requestHelper.notFound('Template not found'));
-      return;
+    const { agentIds } = req.body;
+    const templateLibrary = dataStoreService.getTemplateLibrary();
+    const allTemplates = await templateLibrary.getAllTemplates();
+    
+    let exportTemplates: StratixAgentConfig[] = [];
+    
+    if (agentIds && Array.isArray(agentIds) && agentIds.length > 0) {
+      const all = [...allTemplates.preset, ...allTemplates.custom];
+      exportTemplates = all.filter(t => agentIds.includes(t.agentId));
+    } else {
+      exportTemplates = [...allTemplates.preset, ...allTemplates.custom];
     }
-    res.json(requestHelper.success(config, 'Agent config created from template'));
+
+    const exportData = {
+      version: '1.0.0',
+      exportedAt: Date.now(),
+      templates: exportTemplates
+    };
+
+    res.json(requestHelper.success(exportData, 'Templates exported'));
   } catch (error) {
     res.status(500).json(requestHelper.serverError('Internal server error'));
   }

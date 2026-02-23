@@ -1,62 +1,108 @@
-/**
- * Stratix OpenClaw Adapter - 类型定义
- * 
- * 本文件定义了 OpenClaw 适配器所需的所有 TypeScript 接口和类型
- */
-
 import { StratixOpenClawConfig } from '@/stratix-core/stratix-protocol';
 
-/**
- * OpenClaw 适配器统一接口
- * 所有适配器（本地/远程）必须实现此接口
- */
 export interface OpenClawAdapterInterface {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   execute(action: OpenClawAction): Promise<OpenClawResponse>;
   getStatus(): Promise<OpenClawStatus>;
   subscribe(callback: (event: OpenClawEvent) => void): void;
+  sendMessage(message: string, options?: ChatOptions): Promise<ChatResponse>;
+  invokeTool<T = unknown>(
+    tool: string,
+    args?: Record<string, unknown>,
+    options?: { sessionKey?: string; action?: string }
+  ): Promise<T>;
 }
 
-/**
- * OpenClaw 操作定义
- */
 export interface OpenClawAction {
-  action: string;
-  params: Record<string, any>;
+  method: string;
+  params: Record<string, unknown>;
 }
 
-/**
- * OpenClaw 响应格式
- */
 export interface OpenClawResponse {
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
 }
 
-/**
- * OpenClaw 状态信息
- */
 export interface OpenClawStatus {
   connected: boolean;
   accountId: string;
   lastActive: number;
-  [key: string]: any;
+  version?: string;
+  status?: string;
+  error?: string;
+  [key: string]: unknown;
 }
 
-/**
- * OpenClaw 事件定义
- */
 export interface OpenClawEvent {
   type: string;
-  data: any;
+  data: unknown;
 }
 
-/**
- * OpenClaw 连接配置（扩展自 StratixOpenClawConfig）
- */
 export interface OpenClawConnectionConfig extends StratixOpenClawConfig {
   timeout?: number;
   retryAttempts?: number;
+}
+
+export interface ChatOptions {
+  sessionId?: string;
+  stream?: boolean;
+  agentId?: string;
+}
+
+export interface ChatResponse {
+  messageId: string;
+  content: string;
+  role: 'assistant';
+  sessionId?: string;
+  done: boolean;
+}
+
+export interface WebSocketMessage {
+  id: string;
+  method: string;
+  params: Record<string, unknown>;
+}
+
+export interface WebSocketResponse {
+  id: string;
+  result?: unknown;
+  error?: { code: number; message: string };
+}
+
+export interface WebSocketEvent {
+  type: string;
+  data: unknown;
+}
+
+export interface OpenAIChatCompletionRequest {
+  model?: string;
+  messages: Array<{
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }>;
+  stream?: boolean;
+  temperature?: number;
+  max_tokens?: number;
+}
+
+export interface OpenAIChatCompletionResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: Array<{
+    index: number;
+    message: {
+      role: string;
+      content: string;
+    };
+    finish_reason: string;
+  }>;
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
 }

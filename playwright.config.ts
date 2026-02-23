@@ -9,7 +9,7 @@ export default defineConfig({
   reporter: 'html',
   timeout: 60000,
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:7523',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -22,13 +22,13 @@ export default defineConfig({
   webServer: [
     {
       command: 'npm run dev:backend',
-      url: 'http://localhost:3010/health',
+      url: 'http://localhost:7524/health',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },
     {
       command: 'npm run dev:frontend',
-      url: 'http://localhost:5173',
+      url: 'http://localhost:7523',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },

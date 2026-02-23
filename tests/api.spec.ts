@@ -5,7 +5,7 @@ test.describe('Stratix API', () => {
 
   test.beforeAll(async ({ playwright }) => {
     apiRequest = await playwright.request.newContext({
-      baseURL: 'http://localhost:3010',
+      baseURL: 'http://localhost:7524',
     });
     
     let retries = 10;
